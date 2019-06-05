@@ -1,0 +1,9 @@
+[package]
+name = "atom-analyzer"
+version = "0.1.0"
+authors = ["Katsuki Kobayashi <rare@tirasweel.org>"]
+edition = "2018"
+
+[dependencies]
+clap = "2"
+byteorder = "1.3"
