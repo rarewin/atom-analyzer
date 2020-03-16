@@ -4,7 +4,7 @@ use byteorder::{BigEndian, ReadBytesExt};
 use std::io::{Read, Seek};
 
 #[derive(Debug, PartialEq)]
-enum MajorBrand {
+pub enum MajorBrand {
     QuickTimeMovieFile,
     Other,
 }
@@ -23,9 +23,9 @@ fn match_major_brand(val: u32) -> MajorBrand {
 
 #[derive(Debug, PartialEq)]
 pub struct FtypAtom {
-    atom_offset: u64,
-    atom_size: u64,
-    major_brand: MajorBrand,
+    pub atom_offset: u64,
+    pub atom_size: u64,
+    pub major_brand: MajorBrand,
 }
 
 impl Atom for FtypAtom {
