@@ -1,1 +1,1 @@
-mod atom;
+pub mod atom;

@@ -1,4 +1,4 @@
-mod ftyp;
+pub mod ftyp;
 
 trait Atom {
     fn get_offset(&self) -> u64;

@@ -22,7 +22,7 @@ fn match_major_brand(val: u32) -> MajorBrand {
 }
 
 #[derive(Debug, PartialEq)]
-struct FtypAtom {
+pub struct FtypAtom {
     atom_offset: u64,
     atom_size: u64,
     major_brand: MajorBrand,
@@ -43,7 +43,7 @@ impl Atom for FtypAtom {
 }
 
 #[allow(unused_variables, dead_code)]
-fn parse<R: Read + Seek>(r: &mut R, atom_offset: u64) -> Option<FtypAtom> {
+pub fn parse<R: Read + Seek>(r: &mut R, atom_offset: u64) -> Option<FtypAtom> {
     let mut atom_size = if let Ok(v) = r.read_u32::<BigEndian>() {
         v as u64
     } else {
