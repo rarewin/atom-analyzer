@@ -1,5 +1,3 @@
-use crate::atom::{Atom, AtomType};
-
 use byteorder::{BigEndian, ReadBytesExt};
 use std::io::{Read, Seek};
 
@@ -28,21 +26,6 @@ pub struct FtypAtom {
     pub major_brand: MajorBrand,
 }
 
-impl Atom for FtypAtom {
-    fn get_offset(&self) -> u64 {
-        self.atom_offset
-    }
-
-    fn get_size(&self) -> u64 {
-        self.atom_size
-    }
-
-    fn get_type(&self) -> AtomType {
-        AtomType::Ftyp
-    }
-}
-
-#[allow(unused_variables, dead_code)]
 pub fn parse<R: Read + Seek>(r: &mut R, atom_offset: u64) -> Option<FtypAtom> {
     let mut atom_size = if let Ok(v) = r.read_u32::<BigEndian>() {
         v as u64
@@ -50,7 +33,7 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_offset: u64) -> Option<FtypAtom> {
         return None;
     };
 
-    let atom_type = if let Ok(v) = r.read_u32::<BigEndian>() {
+    if let Ok(v) = r.read_u32::<BigEndian>() {
         // atom_type should be "ftyp"
         if v != 0x66747970 {
             return None;
@@ -77,7 +60,7 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_offset: u64) -> Option<FtypAtom> {
 
 #[cfg(test)]
 mod test_ftyp {
-    use crate::atom::{ftyp, Atom, AtomType};
+    use crate::atom::ftyp;
 
     use std::io::Cursor;
 
@@ -98,12 +81,6 @@ mod test_ftyp {
                 major_brand: ftyp::MajorBrand::QuickTimeMovieFile
             })
         );
-
-        let a = atom.unwrap();
-
-        assert_eq!(a.get_offset(), 0);
-        assert_eq!(a.get_size(), 4);
-        assert_eq!(a.get_type(), AtomType::Ftyp);
     }
 
     #[test]
