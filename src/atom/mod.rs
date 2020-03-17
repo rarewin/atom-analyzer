@@ -1,12 +1,8 @@
 pub mod ftyp;
 
-trait Atom {
-    fn get_offset(&self) -> u64;
-    fn get_size(&self) -> u64;
-    fn get_type(&self) -> AtomType;
-}
+use ftyp::FtypAtom;
 
 #[derive(Debug, PartialEq)]
-enum AtomType {
-    Ftyp,
+enum Atom {
+    Ftyp(FtypAtom),
 }

@@ -19,7 +19,7 @@ fn main() {
     let f = File::open(file_name).expect("file open error");
     let mut reader = BufReader::new(f);
 
-    let t = ftyp::parse(&mut reader, 0);
+    let t = ftyp::parse(&mut reader);
 
     println!("{:?}", t);
 }
