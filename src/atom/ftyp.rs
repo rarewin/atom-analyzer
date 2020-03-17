@@ -24,6 +24,7 @@ pub struct FtypAtom {
     pub atom_offset: u64,
     pub atom_size: u64,
     pub major_brand: MajorBrand,
+    pub minor_version: u32,
 }
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_offset: u64) -> Option<FtypAtom> {
@@ -50,11 +51,13 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_offset: u64) -> Option<FtypAtom> {
     }
 
     let major_brand = match_major_brand(r.read_u32::<BigEndian>().unwrap());
+    let minor_version = r.read_u32::<BigEndian>().unwrap();
 
     Some(FtypAtom {
         atom_offset,
         atom_size,
         major_brand,
+        minor_version,
     })
 }
 
@@ -67,7 +70,8 @@ mod test_ftyp {
     #[test]
     fn test_simple_ftyp() {
         let test: Vec<u8> = vec![
-            0x00, 0x00, 0x00, 0x04, 0x66, 0x74, 0x79, 0x70, 0x71, 0x74, 0x20, 0x20,
+            0x00, 0x00, 0x00, 0x04, 0x66, 0x74, 0x79, 0x70, 0x71, 0x74, 0x20, 0x20, 0x20, 0x04,
+            0x06, 0x00,
         ];
         let mut buf = Cursor::new(test);
 
@@ -78,7 +82,8 @@ mod test_ftyp {
             Some(ftyp::FtypAtom {
                 atom_offset: 0,
                 atom_size: 4,
-                major_brand: ftyp::MajorBrand::QuickTimeMovieFile
+                major_brand: ftyp::MajorBrand::QuickTimeMovieFile,
+                minor_version: 0x20040600
             })
         );
     }
@@ -87,7 +92,7 @@ mod test_ftyp {
     fn test_extended_size_ftyp() {
         let test: Vec<u8> = vec![
             0x00, 0x00, 0x00, 0x01, 0x66, 0x74, 0x79, 0x70, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00,
-            0x00, 0x00, 0x71, 0x74, 0x20, 0x20,
+            0x00, 0x00, 0x71, 0x74, 0x20, 0x20, 0x20, 0x04, 0x06, 0x00,
         ];
         let mut buf = Cursor::new(test);
 
@@ -96,7 +101,8 @@ mod test_ftyp {
             Some(ftyp::FtypAtom {
                 atom_offset: 0,
                 atom_size: 0x01_00000000,
-                major_brand: ftyp::MajorBrand::QuickTimeMovieFile
+                major_brand: ftyp::MajorBrand::QuickTimeMovieFile,
+                minor_version: 0x20040600
             })
         );
     }

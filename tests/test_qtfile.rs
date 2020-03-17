@@ -17,6 +17,7 @@ fn test_camouflage_vga_mov() {
             atom_offset: 0,
             atom_size: 20,
             major_brand: MajorBrand::QuickTimeMovieFile,
+            minor_version: 0x00000200
         }),
         t
     );
