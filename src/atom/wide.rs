@@ -29,8 +29,11 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Option<WideAtom> {
         return None;
     }
 
-    Some(WideAtom {
-        atom_offset,
-        atom_size,
-    })
+    match r.seek(SeekFrom::Current((atom_size as i64) - 8)) {
+        Ok(_) => Some(WideAtom {
+            atom_offset,
+            atom_size,
+        }),
+        Err(_) => None,
+    }
 }

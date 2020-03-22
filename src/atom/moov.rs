@@ -2,12 +2,12 @@ use byteorder::{BigEndian, ReadBytesExt};
 use std::io::{Read, Seek, SeekFrom};
 
 #[derive(Debug, PartialEq)]
-pub struct MdatAtom {
+pub struct MoovAtom {
     pub atom_offset: u64,
     pub atom_size: u64,
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Option<MdatAtom> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Option<MoovAtom> {
     let atom_offset = if let Ok(offset) = r.seek(SeekFrom::Current(0)) {
         offset
     } else {
@@ -21,19 +21,17 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Option<MdatAtom> {
     };
 
     if let Ok(value) = r.read_u32::<BigEndian>() {
-        // atom_type should be "mdat"
-        if value != 0x6d646174 {
+        // atom_type should be "moov"
+        if value != 0x6d6f6f76 {
+            panic!("moov atom not found at 0x{:x}", atom_offset);
             return None;
         }
     } else {
         return None;
     }
 
-    match r.seek(SeekFrom::Current((atom_size as i64) - 8)) {
-        Ok(_) => Some(MdatAtom {
-            atom_offset,
-            atom_size,
-        }),
-        Err(_) => None,
-    }
+    Some(MoovAtom {
+        atom_offset,
+        atom_size,
+    })
 }
