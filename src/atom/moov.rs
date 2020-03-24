@@ -23,7 +23,6 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Option<MoovAtom> {
     if let Ok(value) = r.read_u32::<BigEndian>() {
         // atom_type should be "moov"
         if value != 0x6d6f6f76 {
-            panic!("moov atom not found at 0x{:x}", atom_offset);
             return None;
         }
     } else {
