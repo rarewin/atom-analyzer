@@ -1,11 +1,17 @@
 use byteorder::{BigEndian, ReadBytesExt};
 use std::io::{Read, Seek, SeekFrom};
 
+use std::error;
+
+use crate::atom;
+
 #[derive(Debug, PartialEq)]
 pub enum Brand {
     QuickTimeMovieFile,
     Other(u32),
 }
+
+pub const ATOM_ID: u32 = 0x66747970; // 'ftyp'
 
 /// Returns a brand enum value
 ///
@@ -28,38 +34,16 @@ pub struct FtypAtom {
     pub compatible_brands: Vec<Brand>,
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Option<FtypAtom> {
-    let atom_offset = if let Ok(offset) = r.seek(SeekFrom::Current(0)) {
-        offset
-    } else {
-        return None;
-    };
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, Box<dyn error::Error>> {
+    let atom_head = atom::parse_atom_head(r)?;
 
-    let atom_size = if let Ok(value) = r.read_u32::<BigEndian>() {
-        value as u64
-    } else {
-        return None;
-    };
+    let atom_offset = atom_head.atom_offset;
+    let atom_size = atom_head.atom_size;
+    let atom_type = atom_head.atom_type;
 
-    if atom_size == 0 {
-        unimplemented!("atom with zero size is not implemented yet");
+    if atom_type != ATOM_ID {
+        return Err(Box::new(atom::AtomSeekError::TypeError));
     }
-
-    if let Ok(value) = r.read_u32::<BigEndian>() {
-        // atom_type should be "ftyp"
-        if value != 0x66747970 {
-            return None;
-        }
-    } else {
-        return None;
-    }
-
-    // extended size
-    let atom_size = if atom_size == 1 {
-        r.read_u64::<BigEndian>().unwrap()
-    } else {
-        atom_size
-    };
 
     let major_brand = match_brand(r.read_u32::<BigEndian>().unwrap());
     let minor_version = r.read_u32::<BigEndian>().unwrap();
@@ -70,15 +54,15 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Option<FtypAtom> {
             b.push(if let Ok(value) = r.read_u32::<BigEndian>() {
                 match_brand(value)
             } else {
-                return None;
+                return Err(Box::new(atom::AtomSeekError::UnexpectedError));
             })
         }
         b
     } else {
-        return None;
+        return Err(Box::new(atom::AtomSeekError::UnexpectedError));
     };
 
-    Some(FtypAtom {
+    Ok(FtypAtom {
         atom_offset,
         atom_size,
         major_brand,
@@ -104,14 +88,14 @@ mod test_ftyp {
         let atom = ftyp::parse(&mut buf);
 
         assert_eq!(
-            atom,
-            Some(ftyp::FtypAtom {
+            atom.unwrap(),
+            ftyp::FtypAtom {
                 atom_offset: 0,
                 atom_size: 20,
                 major_brand: ftyp::Brand::QuickTimeMovieFile,
                 minor_version: 0x20040600,
                 compatible_brands: vec![Brand::Other(0)]
-            })
+            }
         );
     }
 
@@ -124,14 +108,14 @@ mod test_ftyp {
         let mut buf = Cursor::new(test);
 
         assert_eq!(
-            ftyp::parse(&mut buf),
-            Some(ftyp::FtypAtom {
+            ftyp::parse(&mut buf).unwrap(),
+            ftyp::FtypAtom {
                 atom_offset: 0,
                 atom_size: 0x1c,
                 major_brand: ftyp::Brand::QuickTimeMovieFile,
                 minor_version: 0x20040600,
                 compatible_brands: vec![Brand::Other(0)]
-            })
+            }
         );
     }
 
@@ -144,6 +128,6 @@ mod test_ftyp {
 
         let mut buf = Cursor::new(test);
 
-        assert_eq!(ftyp::parse(&mut buf), None);
+        assert!(ftyp::parse(&mut buf).is_err());
     }
 }

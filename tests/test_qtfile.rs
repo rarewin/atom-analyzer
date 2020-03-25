@@ -1,11 +1,7 @@
 use std::fs::File;
 use std::io::BufReader;
 
-use atom_analyzer::atom::ftyp::{self, Brand, FtypAtom};
-use atom_analyzer::atom::mdat::{self, MdatAtom};
-use atom_analyzer::atom::moov::{self, MoovAtom};
-use atom_analyzer::atom::wide::{self, WideAtom};
-use atom_analyzer::qtfile;
+use atom_analyzer::atom::{ftyp, mdat, moov, wide};
 
 #[test]
 fn test_camouflage_vga_mov_manual() {
@@ -16,50 +12,43 @@ fn test_camouflage_vga_mov_manual() {
     let t = ftyp::parse(&mut reader);
 
     assert_eq!(
-        Some(FtypAtom {
+        t.unwrap(),
+        ftyp::FtypAtom {
             atom_offset: 0,
             atom_size: 20,
-            major_brand: Brand::QuickTimeMovieFile,
+            major_brand: ftyp::Brand::QuickTimeMovieFile,
             minor_version: 0x00000200,
-            compatible_brands: vec![Brand::QuickTimeMovieFile]
-        }),
-        t
+            compatible_brands: vec![ftyp::Brand::QuickTimeMovieFile]
+        }
     );
 
     let t = wide::parse(&mut reader);
 
     assert_eq!(
-        Some(WideAtom {
+        t.unwrap(),
+        wide::WideAtom {
             atom_offset: 20,
             atom_size: 8
-        }),
-        t
+        },
     );
 
     let t = mdat::parse(&mut reader);
 
     assert_eq!(
-        Some(MdatAtom {
+        t.unwrap(),
+        mdat::MdatAtom {
             atom_offset: 28,
             atom_size: 0x6170
-        }),
-        t
+        },
     );
 
     let t = moov::parse(&mut reader);
 
     assert_eq!(
-        Some(MoovAtom {
+        t.unwrap(),
+        moov::MoovAtom {
             atom_offset: 0x618c,
             atom_size: 0x476,
-        }),
-        t
+        },
     );
-}
-
-#[test]
-fn test_camouflage_vga_mov_qtfile() {
-    let q = qtfile::parse_qtfile("tests/samples/camouflage_vga.mov");
-
-    println!("{:#?}", q);
 }
