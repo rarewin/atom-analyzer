@@ -63,7 +63,7 @@ pub fn parse_qtfile(file_name: &str) -> Result<QtFile, Box<dyn error::Error>> {
 
 impl fmt::Display for QtFileError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str((self as &dyn error::Error).description())
+        f.write_str(&(self as &dyn error::Error).to_string())
     }
 }
 
