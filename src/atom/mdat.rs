@@ -1,5 +1,10 @@
-use byteorder::{BigEndian, ReadBytesExt};
 use std::io::{Read, Seek, SeekFrom};
+
+use std::error;
+
+use crate::atom;
+
+pub const ATOM_ID: u32 = 0x6d646174; // 'mdat'
 
 #[derive(Debug, PartialEq)]
 pub struct MdatAtom {
@@ -7,33 +12,21 @@ pub struct MdatAtom {
     pub atom_size: u64,
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Option<MdatAtom> {
-    let atom_offset = if let Ok(offset) = r.seek(SeekFrom::Current(0)) {
-        offset
-    } else {
-        return None;
-    };
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MdatAtom, Box<dyn error::Error>> {
+    let atom_head = atom::parse_atom_head(r)?;
 
-    let atom_size = if let Ok(value) = r.read_u32::<BigEndian>() {
-        value as u64
-    } else {
-        return None;
-    };
+    let atom_offset = atom_head.atom_offset;
+    let atom_size = atom_head.atom_size;
+    let atom_type = atom_head.atom_type;
 
-    if let Ok(value) = r.read_u32::<BigEndian>() {
-        // atom_type should be "mdat"
-        if value != 0x6d646174 {
-            return None;
-        }
-    } else {
-        return None;
+    if atom_type != ATOM_ID {
+        return Err(Box::new(atom::AtomSeekError::TypeError));
     }
 
-    match r.seek(SeekFrom::Current((atom_size as i64) - 8)) {
-        Ok(_) => Some(MdatAtom {
-            atom_offset,
-            atom_size,
-        }),
-        Err(_) => None,
-    }
+    r.seek(SeekFrom::Start(atom_offset + atom_size))?;
+
+    Ok(MdatAtom {
+        atom_offset,
+        atom_size,
+    })
 }

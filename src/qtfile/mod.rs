@@ -37,25 +37,8 @@ pub fn parse_qtfile(file_name: &str) -> Result<QtFile, Box<dyn error::Error>> {
     let mut reader = BufReader::new(f);
     let mut atoms = Vec::<Atom>::new();
 
-    for _ in 0..3 {
-        match get_atom_type(&mut reader)? {
-            0x66747970 => {
-                atoms.push(atom::Atom::Ftyp(Box::new(
-                    atom::ftyp::parse(&mut reader).unwrap(),
-                )));
-            }
-            0x77696465 => {
-                atoms.push(atom::Atom::Wide(Box::new(
-                    atom::wide::parse(&mut reader).unwrap(),
-                )));
-            }
-            0x6d646174 => {
-                atoms.push(atom::Atom::Mdat(Box::new(
-                    atom::mdat::parse(&mut reader).unwrap(),
-                )));
-            }
-            _ => {}
-        }
+    for _ in 0..4 {
+        atoms.push(atom::parse(&mut reader)?)
     }
 
     Ok(QtFile { atoms })
@@ -90,5 +73,12 @@ mod test_qtfile {
         let atom = qtfile::get_atom_type(&mut buf);
 
         assert!(atom.is_err());
+    }
+
+    #[test]
+    fn test_parse_camouflage_vga_mov() {
+        let q = qtfile::parse_qtfile("tests/samples/camouflage_vga.mov");
+
+        println!("{:#?}", q);
     }
 }
