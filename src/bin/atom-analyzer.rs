@@ -1,11 +1,12 @@
+use std::error;
 use std::fs::File;
 use std::io::BufReader;
 
 use clap::{App, Arg};
 
-use atom_analyzer::atom::ftyp;
+use atom_analyzer::atom;
 
-fn main() {
+fn main() -> Result<(), Box<dyn error::Error>> {
     let m = App::new(env!("CARGO_PKG_NAME"))
         .arg(
             Arg::with_name("INPUT")
@@ -19,7 +20,9 @@ fn main() {
     let f = File::open(file_name).expect("file open error");
     let mut reader = BufReader::new(f);
 
-    let t = ftyp::parse(&mut reader);
+    loop {
+        let t = atom::parse(&mut reader)?;
 
-    println!("{:?}", t);
+        println!("{:#?}", t);
+    }
 }
