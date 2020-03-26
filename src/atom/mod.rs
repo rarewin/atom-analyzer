@@ -1,3 +1,4 @@
+pub mod free;
 pub mod ftyp;
 pub mod mdat;
 pub mod moov;
@@ -14,6 +15,7 @@ pub enum Atom {
     Ftyp(Box<ftyp::FtypAtom>),
     Mdat(Box<mdat::MdatAtom>),
     Wide(Box<wide::WideAtom>),
+    Free(Box<free::FreeAtom>),
     Moov(Box<moov::MoovAtom>),
 }
 
@@ -37,6 +39,7 @@ impl Atom {
             Atom::Ftyp(f) => f.atom_offset,
             Atom::Mdat(m) => m.atom_offset,
             Atom::Wide(w) => w.atom_offset,
+            Atom::Free(f) => f.atom_offset,
             Atom::Moov(m) => m.atom_offset,
         };
     }
@@ -51,6 +54,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, Box<dyn error::Error>> {
         ftyp::ATOM_ID => Ok(Atom::Ftyp(Box::new(ftyp::parse(r)?))),
         wide::ATOM_ID => Ok(Atom::Wide(Box::new(wide::parse(r)?))),
         mdat::ATOM_ID => Ok(Atom::Mdat(Box::new(mdat::parse(r)?))),
+        free::ATOM_ID => Ok(Atom::Free(Box::new(free::parse(r)?))),
         moov::ATOM_ID => Ok(Atom::Moov(Box::new(moov::parse(r)?))),
         _ => unimplemented!("unknown atom"),
     }
