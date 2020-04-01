@@ -45,8 +45,8 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, Box<dyn error::Error
         return Err(Box::new(atom::AtomSeekError::TypeError));
     }
 
-    let major_brand = match_brand(r.read_u32::<BigEndian>().unwrap());
-    let minor_version = r.read_u32::<BigEndian>().unwrap();
+    let major_brand = match_brand(r.read_u32::<BigEndian>()?);
+    let minor_version = r.read_u32::<BigEndian>()?;
 
     let compatible_brands = if let Ok(offset) = r.seek(SeekFrom::Current(0)) {
         let mut b = Vec::<Brand>::new();
