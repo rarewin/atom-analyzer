@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::BufReader;
 
 use atom_analyzer::atom::{self, ftyp, mdat, moov, wide};
+use atom_analyzer::element::qtfile_datetime;
 
 #[test]
 fn test_camouflage_vga_mov_manual() {
@@ -39,8 +40,26 @@ fn test_camouflage_vga_mov_manual() {
     assert_eq!(
         atom::parse(&mut reader).unwrap(),
         atom::Atom::Moov(Box::new(moov::MoovAtom {
-            atom_offset: 0x618c,
-            atom_size: 0x476,
+            atom_head: atom::AtomHead {
+                atom_type: atom::moov::ATOM_ID,
+                atom_offset: 0x618c,
+                atom_size: 0x476,
+            },
+            mvhd_atom: Some(atom::mvhd::MvhdAtom {
+                atom_head: atom::AtomHead {
+                    atom_type: atom::mvhd::ATOM_ID,
+                    atom_offset: 0x6194,
+                    atom_size: 0x6c,
+                },
+                atom_version: 0,
+                atom_flags: [0, 0, 0],
+                creation_time: qtfile_datetime::QtFileDateTime::new(0),
+                modification_time: qtfile_datetime::QtFileDateTime::new(0),
+                time_scale: 1000,
+                duration: 1000,
+                preferred_rate: 0x10000,
+                preferred_volume: 0x100,
+            }),
         })),
     );
 }
