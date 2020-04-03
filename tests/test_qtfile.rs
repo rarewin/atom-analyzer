@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::BufReader;
 
 use atom_analyzer::atom::{self, ftyp, mdat, moov, wide};
-use atom_analyzer::element::qtfile_datetime;
+use atom_analyzer::element::{qtfile_datetime, qtfile_matrix};
 
 #[test]
 fn test_camouflage_vga_mov_manual() {
@@ -59,6 +59,9 @@ fn test_camouflage_vga_mov_manual() {
                 duration: 1000,
                 preferred_rate: 0x10000,
                 preferred_volume: 0x100,
+                matrix_structure: qtfile_matrix::QtFileMatrix::new(&[
+                    0x10000, 0, 0, 0, 0x10000, 0, 0, 0, 0x40000000
+                ]),
             }),
         })),
     );
