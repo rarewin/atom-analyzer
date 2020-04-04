@@ -5,7 +5,7 @@ use fixed::{
     FixedU32,
 };
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 pub struct QtFileMatrix {
     a: FixedU32<U16>,
     b: FixedU32<U16>,
@@ -41,6 +41,19 @@ impl fmt::Display for QtFileMatrix {
             "[[{}, {}, {}], [{}, {}, {}], [{}, {}, {}]]",
             self.a, self.b, self.u, self.c, self.d, self.v, self.t_x, self.t_y, self.w,
         )
+    }
+}
+
+impl fmt::Debug for QtFileMatrix {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_list()
+            .entry(&format_args!("[{:?}, {:?}, {:?}]", self.a, self.b, self.u))
+            .entry(&format_args!("[{:?}, {:?}, {:?}]", self.c, self.d, self.v))
+            .entry(&format_args!(
+                "[{:?}, {:?}, {:?}]",
+                self.t_x, self.t_y, self.w
+            ))
+            .finish()
     }
 }
 

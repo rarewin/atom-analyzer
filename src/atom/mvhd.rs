@@ -20,6 +20,13 @@ pub struct MvhdAtom {
     pub preferred_rate: u32,
     pub preferred_volume: u16,
     pub matrix_structure: element::qtfile_matrix::QtFileMatrix,
+    pub preview_time: element::qtfile_datetime::QtFileDateTime,
+    pub preview_duration: u32,
+    pub poster_time: element::qtfile_datetime::QtFileDateTime,
+    pub selection_time: element::qtfile_datetime::QtFileDateTime,
+    pub selection_duration: u32,
+    pub current_time: element::qtfile_datetime::QtFileDateTime,
+    pub next_track_id: u32,
 }
 
 pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MvhdAtom, Box<dyn error::Error>> {
@@ -52,6 +59,18 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MvhdAtom, Box<dyn error::Error
 
     let matrix_structure = element::qtfile_matrix::QtFileMatrix::new(&matrix);
 
+    let preview_time = element::qtfile_datetime::QtFileDateTime::new(r.read_u32::<BigEndian>()?);
+    let preview_duration = r.read_u32::<BigEndian>()?;
+
+    let poster_time = element::qtfile_datetime::QtFileDateTime::new(r.read_u32::<BigEndian>()?);
+
+    let selection_time = element::qtfile_datetime::QtFileDateTime::new(r.read_u32::<BigEndian>()?);
+    let selection_duration = r.read_u32::<BigEndian>()?;
+
+    let current_time = element::qtfile_datetime::QtFileDateTime::new(r.read_u32::<BigEndian>()?);
+
+    let next_track_id = r.read_u32::<BigEndian>()?;
+
     Ok(MvhdAtom {
         atom_head,
         atom_version,
@@ -63,5 +82,12 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MvhdAtom, Box<dyn error::Error
         preferred_rate,
         preferred_volume,
         matrix_structure,
+        preview_time,
+        preview_duration,
+        poster_time,
+        selection_time,
+        selection_duration,
+        current_time,
+        next_track_id,
     })
 }

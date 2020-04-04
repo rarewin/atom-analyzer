@@ -62,6 +62,13 @@ fn test_camouflage_vga_mov_manual() {
                 matrix_structure: qtfile_matrix::QtFileMatrix::new(&[
                     0x10000, 0, 0, 0, 0x10000, 0, 0, 0, 0x40000000
                 ]),
+                preview_time: qtfile_datetime::QtFileDateTime::new(0),
+                preview_duration: 0,
+                poster_time: qtfile_datetime::QtFileDateTime::new(0),
+                selection_time: qtfile_datetime::QtFileDateTime::new(0),
+                selection_duration: 0,
+                current_time: qtfile_datetime::QtFileDateTime::new(0),
+                next_track_id: 2,
             }),
         })),
     );

@@ -8,7 +8,7 @@ lazy_static! {
     pub static ref REFERENCE_DATETIME: DateTime<Utc> = Utc.ymd(1904, 1, 1).and_hms(0, 0, 0);
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 pub struct QtFileDateTime {
     value: u32,
     utc: DateTime<Utc>,
@@ -24,6 +24,17 @@ impl QtFileDateTime {
 impl fmt::Display for QtFileDateTime {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.utc.format("%Y-%m-%d %H:%M:%S"))
+    }
+}
+
+impl fmt::Debug for QtFileDateTime {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{} (0x{:x})",
+            self.utc.format("%Y-%m-%d %H:%M:%S"),
+            self.value
+        )
     }
 }
 
