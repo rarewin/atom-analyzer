@@ -3,6 +3,8 @@ pub mod ftyp;
 pub mod mdat;
 pub mod moov;
 pub mod mvhd;
+pub mod other;
+pub mod trak;
 pub mod wide;
 
 use std::error;
@@ -19,6 +21,8 @@ pub enum Atom {
     Free(Box<free::FreeAtom>),
     Moov(Box<moov::MoovAtom>),
     Mvhd(Box<mvhd::MvhdAtom>),
+    Trak(Box<trak::TrakAtom>),
+    Other(Box<other::OtherAtom>),
 }
 
 #[derive(Debug, PartialEq)]
@@ -44,6 +48,8 @@ impl Atom {
             Atom::Free(f) => f.atom_offset,
             Atom::Moov(m) => m.atom_head.atom_offset,
             Atom::Mvhd(m) => m.atom_head.atom_offset,
+            Atom::Trak(t) => t.atom_head.atom_offset,
+            Atom::Other(o) => o.atom_head.atom_offset,
         };
     }
 }
@@ -60,7 +66,8 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, Box<dyn error::Error>> {
         free::ATOM_ID => Ok(Atom::Free(Box::new(free::parse(r)?))),
         moov::ATOM_ID => Ok(Atom::Moov(Box::new(moov::parse(r)?))),
         mvhd::ATOM_ID => Ok(Atom::Mvhd(Box::new(mvhd::parse(r)?))),
-        _ => unimplemented!("unknown atom"),
+        trak::ATOM_ID => Ok(Atom::Trak(Box::new(trak::parse(r)?))),
+        _ => Ok(Atom::Other(Box::new(other::parse(r)?))),
     }
 }
 

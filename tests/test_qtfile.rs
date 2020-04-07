@@ -70,6 +70,13 @@ fn test_camouflage_vga_mov_manual() {
                 current_time: qtfile_datetime::QtFileDateTime::new(0),
                 next_track_id: 2,
             }),
+            trak_atoms: vec![atom::trak::TrakAtom {
+                atom_head: atom::AtomHead {
+                    atom_type: atom::trak::ATOM_ID,
+                    atom_offset: 0x6200,
+                    atom_size: 0x3e1,
+                },
+            }],
         })),
     );
 }
