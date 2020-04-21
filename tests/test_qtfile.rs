@@ -13,8 +13,11 @@ fn test_camouflage_vga_mov_manual() {
     assert_eq!(
         atom::parse(&mut reader).unwrap(),
         atom::Atom::Ftyp(Box::new(ftyp::FtypAtom {
-            atom_offset: 0,
-            atom_size: 20,
+            atom_head: atom::AtomHead {
+                atom_offset: 0,
+                atom_size: 20,
+                atom_type: ftyp::ATOM_ID,
+            },
             major_brand: ftyp::Brand::QuickTimeMovieFile,
             minor_version: 0x00000200,
             compatible_brands: vec![ftyp::Brand::QuickTimeMovieFile]
@@ -24,16 +27,22 @@ fn test_camouflage_vga_mov_manual() {
     assert_eq!(
         atom::parse(&mut reader).unwrap(),
         atom::Atom::Wide(Box::new(wide::WideAtom {
-            atom_offset: 20,
-            atom_size: 8
+            atom_head: atom::AtomHead {
+                atom_offset: 20,
+                atom_size: 8,
+                atom_type: atom::wide::ATOM_ID
+            }
         })),
     );
 
     assert_eq!(
         atom::parse(&mut reader).unwrap(),
         atom::Atom::Mdat(Box::new(mdat::MdatAtom {
-            atom_offset: 28,
-            atom_size: 0x6170
+            atom_head: atom::AtomHead {
+                atom_offset: 28,
+                atom_size: 0x6170,
+                atom_type: atom::mdat::ATOM_ID
+            }
         })),
     );
 

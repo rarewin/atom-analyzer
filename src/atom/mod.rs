@@ -52,10 +52,10 @@ pub enum AtomSeekError {
 impl Atom {
     pub fn get_offset(&self) {
         match self {
-            Atom::Ftyp(f) => f.atom_offset,
-            Atom::Mdat(m) => m.atom_offset,
-            Atom::Wide(w) => w.atom_offset,
-            Atom::Free(f) => f.atom_offset,
+            Atom::Ftyp(f) => f.atom_head.atom_offset,
+            Atom::Mdat(m) => m.atom_head.atom_offset,
+            Atom::Wide(w) => w.atom_head.atom_offset,
+            Atom::Free(f) => f.atom_head.atom_offset,
             Atom::Moov(m) => m.atom_head.atom_offset,
             Atom::Mvhd(m) => m.atom_head.atom_offset,
             Atom::Trak(t) => t.atom_head.atom_offset,
