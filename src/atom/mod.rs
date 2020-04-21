@@ -25,11 +25,21 @@ pub enum Atom {
     Other(Box<other::OtherAtom>),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 pub struct AtomHead {
     pub atom_offset: u64,
     pub atom_size: u64,
     pub atom_type: u32,
+}
+
+impl fmt::Debug for AtomHead {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("AtomHead")
+            .field("atom_offset", &format_args!("0x{:016x}", self.atom_offset))
+            .field("atom_size", &format_args!("0x{:016x}", self.atom_size))
+            .field("atom_type", &format_args!("0x{:08x}", self.atom_type)) // TODO
+            .finish()
+    }
 }
 
 #[derive(Debug, PartialEq)]
