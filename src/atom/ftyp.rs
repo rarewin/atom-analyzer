@@ -27,19 +27,24 @@ fn match_brand(val: u32) -> Brand {
 
 #[derive(Debug, PartialEq)]
 pub struct FtypAtom {
-    pub atom_offset: u64,
-    pub atom_size: u64,
+    pub atom_head: atom::AtomHead,
     pub major_brand: Brand,
     pub minor_version: u32,
     pub compatible_brands: Vec<Brand>,
 }
 
 pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, Box<dyn error::Error>> {
-    let atom_head = atom::parse_atom_head(r)?;
+    let head = atom::parse_atom_head(r)?;
 
-    let atom_offset = atom_head.atom_offset;
-    let atom_size = atom_head.atom_size;
-    let atom_type = atom_head.atom_type;
+    let atom_offset = head.atom_offset;
+    let atom_size = head.atom_size;
+    let atom_type = head.atom_type;
+
+    let atom_head = atom::AtomHead {
+        atom_offset,
+        atom_size,
+        atom_type,
+    };
 
     if atom_type != ATOM_ID {
         return Err(Box::new(atom::AtomSeekError::TypeError));
@@ -63,8 +68,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, Box<dyn error::Error
     };
 
     Ok(FtypAtom {
-        atom_offset,
-        atom_size,
+        atom_head,
         major_brand,
         minor_version,
         compatible_brands,
@@ -73,6 +77,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, Box<dyn error::Error
 
 #[cfg(test)]
 mod test_ftyp {
+    use crate::atom;
     use crate::atom::ftyp::{self, Brand};
 
     use std::io::Cursor;
@@ -90,8 +95,11 @@ mod test_ftyp {
         assert_eq!(
             atom.unwrap(),
             ftyp::FtypAtom {
-                atom_offset: 0,
-                atom_size: 20,
+                atom_head: atom::AtomHead {
+                    atom_offset: 0,
+                    atom_size: 20,
+                    atom_type: ftyp::ATOM_ID,
+                },
                 major_brand: ftyp::Brand::QuickTimeMovieFile,
                 minor_version: 0x20040600,
                 compatible_brands: vec![Brand::Other(0)]
@@ -110,8 +118,11 @@ mod test_ftyp {
         assert_eq!(
             ftyp::parse(&mut buf).unwrap(),
             ftyp::FtypAtom {
-                atom_offset: 0,
-                atom_size: 0x1c,
+                atom_head: atom::AtomHead {
+                    atom_offset: 0,
+                    atom_size: 0x1c,
+                    atom_type: ftyp::ATOM_ID,
+                },
                 major_brand: ftyp::Brand::QuickTimeMovieFile,
                 minor_version: 0x20040600,
                 compatible_brands: vec![Brand::Other(0)]

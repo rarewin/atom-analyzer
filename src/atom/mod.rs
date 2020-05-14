@@ -21,11 +21,21 @@ pub enum Atom {
     Mvhd(Box<mvhd::MvhdAtom>),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq, Copy, Clone)]
 pub struct AtomHead {
     pub atom_offset: u64,
     pub atom_size: u64,
     pub atom_type: u32,
+}
+
+impl fmt::Debug for AtomHead {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("AtomHead")
+            .field("atom_offset", &format_args!("0x{:016x}", self.atom_offset))
+            .field("atom_size", &format_args!("0x{:016x}", self.atom_size))
+            .field("atom_type", &format_args!("0x{:08x}", self.atom_type))
+            .finish()
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -36,15 +46,19 @@ pub enum AtomSeekError {
 }
 
 impl Atom {
-    pub fn get_offset(&self) {
+    pub fn get_atomhead(&self) -> AtomHead {
         match self {
-            Atom::Ftyp(f) => f.atom_offset,
-            Atom::Mdat(m) => m.atom_offset,
-            Atom::Wide(w) => w.atom_offset,
-            Atom::Free(f) => f.atom_offset,
-            Atom::Moov(m) => m.atom_head.atom_offset,
-            Atom::Mvhd(m) => m.atom_head.atom_offset,
-        };
+            Atom::Ftyp(f) => f.atom_head,
+            Atom::Mdat(m) => m.atom_head,
+            Atom::Wide(w) => w.atom_head,
+            Atom::Free(f) => f.atom_head,
+            Atom::Moov(m) => m.atom_head,
+            Atom::Mvhd(m) => m.atom_head,
+        }
+    }
+
+    pub fn get_offset(&self) -> u64 {
+        self.get_atomhead().atom_offset
     }
 }
 
