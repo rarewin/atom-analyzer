@@ -3,6 +3,9 @@ pub mod ftyp;
 pub mod mdat;
 pub mod moov;
 pub mod mvhd;
+pub mod tkhd;
+pub mod trak;
+pub mod udta;
 pub mod wide;
 
 use std::error;
@@ -19,6 +22,9 @@ pub enum Atom {
     Free(Box<free::FreeAtom>),
     Moov(Box<moov::MoovAtom>),
     Mvhd(Box<mvhd::MvhdAtom>),
+    Trak(Box<trak::TrakAtom>),
+    Tkhd(Box<tkhd::TkhdAtom>),
+    Udta(Box<udta::UdtaAtom>),
 }
 
 #[derive(PartialEq, Copy, Clone)]
@@ -54,6 +60,9 @@ impl Atom {
             Atom::Free(f) => f.atom_head,
             Atom::Moov(m) => m.atom_head,
             Atom::Mvhd(m) => m.atom_head,
+            Atom::Trak(t) => t.atom_head,
+            Atom::Udta(u) => u.atom_head,
+            Atom::Tkhd(t) => t.atom_head,
         }
     }
 
@@ -74,7 +83,10 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, Box<dyn error::Error>> {
         free::ATOM_ID => Ok(Atom::Free(Box::new(free::parse(r)?))),
         moov::ATOM_ID => Ok(Atom::Moov(Box::new(moov::parse(r)?))),
         mvhd::ATOM_ID => Ok(Atom::Mvhd(Box::new(mvhd::parse(r)?))),
-        _ => unimplemented!("unknown atom"),
+        trak::ATOM_ID => Ok(Atom::Trak(Box::new(trak::parse(r)?))),
+        udta::ATOM_ID => Ok(Atom::Udta(Box::new(udta::parse(r)?))),
+        tkhd::ATOM_ID => Ok(Atom::Tkhd(Box::new(tkhd::parse(r)?))),
+        _ => unimplemented!("unknown atom type 0x{:08x}", atom_head.atom_type),
     }
 }
 

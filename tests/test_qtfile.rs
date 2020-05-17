@@ -79,6 +79,31 @@ fn test_camouflage_vga_mov_manual() {
                 current_time: qtfile_datetime::QtFileDateTime::new(0),
                 next_track_id: 2,
             }),
+            trak_atoms: vec![atom::trak::TrakAtom {
+                atom_head: atom::AtomHead {
+                    atom_type: atom::trak::ATOM_ID,
+                    atom_offset: 0x6200,
+                    atom_size: 0x3e1,
+                },
+                tkhd_atom: atom::tkhd::TkhdAtom {
+                    atom_head: atom::AtomHead {
+                        atom_type: atom::tkhd::ATOM_ID,
+                        atom_offset: 0x6208,
+                        atom_size: 0x5c,
+                    },
+                    atom_version: 0,
+                    atom_flags: [0, 0, 3],
+                    creation_time: qtfile_datetime::QtFileDateTime::new(0),
+                    modification_time: qtfile_datetime::QtFileDateTime::new(0),
+                },
+            },],
+            udta_atom: Some(atom::udta::UdtaAtom {
+                atom_head: atom::AtomHead {
+                    atom_type: atom::udta::ATOM_ID,
+                    atom_offset: 0x65e1,
+                    atom_size: 0x21,
+                },
+            },)
         })),
     );
 }

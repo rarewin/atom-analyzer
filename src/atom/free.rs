@@ -12,17 +12,11 @@ pub struct FreeAtom {
 }
 
 pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FreeAtom, Box<dyn error::Error>> {
-    let head = atom::parse_atom_head(r)?;
+    let atom_head = atom::parse_atom_head(r)?;
 
-    let atom_offset = head.atom_offset;
-    let atom_size = head.atom_size;
-    let atom_type = head.atom_type;
-
-    let atom_head = atom::AtomHead {
-        atom_offset,
-        atom_size,
-        atom_type,
-    };
+    let atom_offset = atom_head.atom_offset;
+    let atom_size = atom_head.atom_size;
+    let atom_type = atom_head.atom_type;
 
     if atom_type != ATOM_ID {
         return Err(Box::new(atom::AtomSeekError::TypeError));
