@@ -4,7 +4,7 @@ use anyhow::{Error, Result};
 
 use crate::atom;
 
-pub const ATOM_ID: u32 = 0x66726565; // 'free'
+pub const ATOM_ID: u32 = 0x6672_6565; // 'free'
 
 #[derive(Debug, PartialEq)]
 pub struct FreeAtom {

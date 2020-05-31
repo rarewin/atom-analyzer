@@ -4,7 +4,7 @@ use anyhow::{Error, Result};
 
 use crate::atom;
 
-pub const ATOM_ID: u32 = 0x6d646174; // 'mdat'
+pub const ATOM_ID: u32 = 0x6d64_6174; // 'mdat'
 
 #[derive(Debug, PartialEq)]
 pub struct MdatAtom {

@@ -11,7 +11,7 @@ pub enum Brand {
     Other(u32),
 }
 
-pub const ATOM_ID: u32 = 0x66747970; // 'ftyp'
+pub const ATOM_ID: u32 = 0x6674_7970; // 'ftyp'
 
 /// Returns a brand enum value
 ///
@@ -20,7 +20,7 @@ pub const ATOM_ID: u32 = 0x66747970; // 'ftyp'
 /// * `val` - A 32-bit unsigned integer
 fn match_brand(val: u32) -> Brand {
     match val {
-        0x71742020 => Brand::QuickTimeMovieFile,
+        0x7174_2020 => Brand::QuickTimeMovieFile,
         _ => Brand::Other(val),
     }
 }

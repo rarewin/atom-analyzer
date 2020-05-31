@@ -6,7 +6,7 @@ use byteorder::{BigEndian, ReadBytesExt};
 use crate::atom;
 use crate::element;
 
-pub const ATOM_ID: u32 = 0x6d766864; // 'mvhd'
+pub const ATOM_ID: u32 = 0x6d76_6864; // 'mvhd'
 
 #[derive(Debug, PartialEq)]
 pub struct MvhdAtom {
@@ -41,7 +41,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MvhdAtom> {
     let atom_version = r.read_u8()?;
     let mut atom_flags = [0 as u8; 3];
 
-    r.read(&mut atom_flags)?;
+    r.read_exact(&mut atom_flags)?;
 
     let creation_time = element::qtfile_datetime::QtFileDateTime::new(r.read_u32::<BigEndian>()?);
     let modification_time =
@@ -52,11 +52,11 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MvhdAtom> {
     let preferred_volume = r.read_u16::<BigEndian>()?;
 
     let mut reserved = [0 as u8; 10];
-    r.read(&mut reserved)?;
+    r.read_exact(&mut reserved)?;
 
     let mut matrix = [0 as u32; 9];
-    for i in 0..matrix.len() {
-        matrix[i] = r.read_u32::<BigEndian>()?;
+    for element in &mut matrix {
+        *element = r.read_u32::<BigEndian>()?;
     }
 
     let matrix_structure = element::qtfile_matrix::QtFileMatrix::new(&matrix);

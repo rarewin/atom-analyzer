@@ -4,7 +4,7 @@ use anyhow::{Error, Result};
 
 use crate::atom;
 
-pub const ATOM_ID: u32 = 0x6d6f6f76; // 'moov'
+pub const ATOM_ID: u32 = 0x6d6f_6f76; // 'moov'
 
 #[derive(Debug, PartialEq)]
 pub struct MoovAtom {
