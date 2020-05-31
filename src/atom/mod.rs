@@ -5,11 +5,11 @@ pub mod moov;
 pub mod mvhd;
 pub mod wide;
 
-use std::error;
-use std::fmt;
 use std::io::{Read, Seek, SeekFrom};
 
+use anyhow::Result;
 use byteorder::{BigEndian, ReadBytesExt};
+use thiserror::Error;
 
 #[derive(Debug, PartialEq)]
 pub enum Atom {
@@ -28,11 +28,14 @@ pub struct AtomHead {
     pub atom_type: u32,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Error)]
 pub enum AtomSeekError {
-    SeekFailed,
-    TypeError,
-    UnexpectedError,
+    #[error("failed to seek at {0}")]
+    SeekFailed(u64),
+    #[error("type error at {0}")]
+    TypeError(u64),
+    #[error("unexpected error at {0}")]
+    UnexpectedError(u64),
 }
 
 impl Atom {
@@ -48,7 +51,7 @@ impl Atom {
     }
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, Box<dyn error::Error>> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom> {
     let atom_head = parse_atom_head(r)?;
 
     r.seek(SeekFrom::Start(atom_head.atom_offset))?;
@@ -91,7 +94,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, Box<dyn error::Error>> {
 ///     }
 /// );
 /// ```
-pub fn parse_atom_head<R: Read + Seek>(r: &mut R) -> Result<AtomHead, Box<dyn error::Error>> {
+pub fn parse_atom_head<R: Read + Seek>(r: &mut R) -> Result<AtomHead> {
     let atom_offset = r.seek(SeekFrom::Current(0))?;
 
     let atom_size = r.read_u32::<BigEndian>()? as u64;
@@ -113,20 +116,4 @@ pub fn parse_atom_head<R: Read + Seek>(r: &mut R) -> Result<AtomHead, Box<dyn er
         atom_size,
         atom_type,
     })
-}
-
-impl fmt::Display for AtomSeekError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&(self as &dyn error::Error).to_string())
-    }
-}
-
-impl error::Error for AtomSeekError {
-    fn description(&self) -> &str {
-        match *self {
-            AtomSeekError::SeekFailed => "seek failed",
-            AtomSeekError::TypeError => "atom type error",
-            AtomSeekError::UnexpectedError => "unexpected error",
-        }
-    }
 }

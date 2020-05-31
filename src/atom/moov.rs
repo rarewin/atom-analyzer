@@ -1,6 +1,6 @@
 use std::io::{Read, Seek, SeekFrom};
 
-use std::error;
+use anyhow::{Error, Result};
 
 use crate::atom;
 
@@ -12,11 +12,13 @@ pub struct MoovAtom {
     pub mvhd_atom: Option<atom::mvhd::MvhdAtom>,
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MoovAtom, Box<dyn error::Error>> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MoovAtom> {
     let atom_head = atom::parse_atom_head(r)?;
 
     if atom_head.atom_type != ATOM_ID {
-        return Err(Box::new(atom::AtomSeekError::TypeError));
+        return Err(Error::new(atom::AtomSeekError::TypeError(
+            atom_head.atom_offset,
+        )));
     }
 
     let mvhd_atom = match atom::parse(r)? {
