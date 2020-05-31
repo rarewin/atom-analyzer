@@ -1,12 +1,12 @@
-use std::error;
 use std::fs::File;
 use std::io::BufReader;
 
+use anyhow::Result;
 use clap::{App, Arg};
 
 use atom_analyzer::atom;
 
-fn main() -> Result<(), Box<dyn error::Error>> {
+fn main() -> Result<()> {
     let m = App::new(env!("CARGO_PKG_NAME"))
         .arg(
             Arg::with_name("INPUT")
