@@ -4,7 +4,7 @@ use anyhow::{Error, Result};
 
 use crate::atom;
 
-pub const ATOM_ID: u32 = 0x77696465; // 'wide'
+pub const ATOM_ID: u32 = 0x7769_6465; // 'wide'
 
 #[derive(Debug, PartialEq)]
 pub struct WideAtom {
