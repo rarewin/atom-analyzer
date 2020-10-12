@@ -1,23 +1,23 @@
 use std::fs::File;
 use std::io::BufReader;
+use std::path::PathBuf;
 
 use anyhow::Result;
-use clap::{App, Arg};
+use clap::Clap;
 
 use atom_analyzer::atom;
 
-fn main() -> Result<()> {
-    let m = App::new(env!("CARGO_PKG_NAME"))
-        .arg(
-            Arg::with_name("INPUT")
-                .help("Sets the input file to use")
-                .required(true)
-                .index(1),
-        )
-        .get_matches();
+#[derive(Clap)]
+#[clap(name=env!("CARGO_PKG_NAME"))]
+struct Opts {
+    #[clap(name = "INPUT")]
+    input: PathBuf,
+}
 
-    let file_name = m.value_of("INPUT").unwrap();
-    let f = File::open(file_name).expect("file open error");
+fn main() -> Result<()> {
+    let opts = Opts::parse();
+
+    let f = File::open(opts.input)?;
     let mut reader = BufReader::new(f);
 
     loop {
