@@ -1,7 +1,5 @@
 use std::io::{Read, Seek, SeekFrom};
 
-use anyhow::{Error, Result};
-
 use crate::atom;
 
 pub const ATOM_ID: u32 = 0x6d6f_6f76; // 'moov'
@@ -12,13 +10,11 @@ pub struct MoovAtom {
     pub mvhd_atom: Option<atom::mvhd::MvhdAtom>,
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MoovAtom> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MoovAtom, atom::AtomSeekError> {
     let atom_head = atom::parse_atom_head(r)?;
 
     if atom_head.atom_type != ATOM_ID {
-        return Err(Error::new(atom::AtomSeekError::TypeError(
-            atom_head.atom_offset,
-        )));
+        return Err(atom::AtomSeekError::TypeError(atom_head.atom_offset));
     }
 
     let mvhd_atom = match atom::parse(r)? {
