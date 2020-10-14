@@ -10,11 +10,11 @@ pub struct MoovAtom {
     pub mvhd_atom: Option<atom::mvhd::MvhdAtom>,
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MoovAtom, atom::AtomSeekError> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MoovAtom, atom::AtomParseError> {
     let atom_head = atom::parse_atom_head(r)?;
 
     if atom_head.atom_type != ATOM_ID {
-        return Err(atom::AtomSeekError::TypeError(atom_head.atom_offset));
+        return Err(atom::AtomParseError::TypeError(atom_head.atom_offset));
     }
 
     let mvhd_atom = match atom::parse(r)? {

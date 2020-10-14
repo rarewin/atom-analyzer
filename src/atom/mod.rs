@@ -28,7 +28,7 @@ pub struct AtomHead {
 }
 
 #[derive(Debug, Error)]
-pub enum AtomSeekError {
+pub enum AtomParseError {
     #[error("failed to seek at {0}")]
     SeekFailed(u64),
     #[error("type error at {0}")]
@@ -52,7 +52,7 @@ impl Atom {
     }
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomSeekError> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomParseError> {
     let atom_head = parse_atom_head(r)?;
 
     r.seek(SeekFrom::Start(atom_head.atom_offset))?;
@@ -95,7 +95,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomSeekError> {
 ///     }
 /// );
 /// ```
-pub fn parse_atom_head<R: Read + Seek>(r: &mut R) -> Result<AtomHead, AtomSeekError> {
+pub fn parse_atom_head<R: Read + Seek>(r: &mut R) -> Result<AtomHead, AtomParseError> {
     let atom_offset = r.seek(SeekFrom::Current(0))?;
 
     let atom_size = r.read_u32::<BigEndian>()? as u64;

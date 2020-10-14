@@ -10,7 +10,7 @@ pub struct WideAtom {
     pub atom_size: u64,
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<WideAtom, atom::AtomSeekError> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<WideAtom, atom::AtomParseError> {
     let atom_head = atom::parse_atom_head(r)?;
 
     let atom_offset = atom_head.atom_offset;
@@ -18,7 +18,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<WideAtom, atom::AtomSeekError>
     let atom_type = atom_head.atom_type;
 
     if atom_type != ATOM_ID {
-        return Err(atom::AtomSeekError::TypeError(atom_offset));
+        return Err(atom::AtomParseError::TypeError(atom_offset));
     }
 
     r.seek(SeekFrom::Start(atom_offset + atom_size))?;
