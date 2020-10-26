@@ -1,11 +1,9 @@
-use std::fs::File;
-use std::io::BufReader;
 use std::path::PathBuf;
 
 use anyhow::Result;
 use clap::Clap;
 
-use atom_analyzer::atom;
+use atom_analyzer::qtfile;
 
 #[derive(Clap)]
 #[clap(name=env!("CARGO_PKG_NAME"))]
@@ -17,12 +15,8 @@ struct Opts {
 fn main() -> Result<()> {
     let opts = Opts::parse();
 
-    let f = File::open(opts.input)?;
-    let mut reader = BufReader::new(f);
+    let t = qtfile::parse_file(opts.input)?;
+    println!("{:#?}", t);
 
-    loop {
-        let t = atom::parse(&mut reader)?;
-
-        println!("{:#?}", t);
-    }
+    Ok(())
 }

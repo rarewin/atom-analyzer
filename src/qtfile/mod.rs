@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::BufReader;
 use std::io::{Read, Seek, SeekFrom};
+use std::path::PathBuf;
 
 use anyhow::{Error, Result};
 use byteorder::{BigEndian, ReadBytesExt};
@@ -33,13 +34,13 @@ pub fn get_atom_type<R: Read + Seek>(r: &mut R) -> Result<u32> {
     Ok(atom_type)
 }
 
-pub fn parse_qtfile(file_name: &str) -> Result<QtFile> {
+pub fn parse_file(file_name: PathBuf) -> Result<QtFile> {
     let f = File::open(file_name)?;
     let mut reader = BufReader::new(f);
     let mut atoms = Vec::<Atom>::new();
 
-    for _ in 0..4 {
-        atoms.push(atom::parse(&mut reader)?)
+    while let Ok(a) = atom::parse(&mut reader) {
+        atoms.push(a);
     }
 
     Ok(QtFile { atoms })
@@ -64,7 +65,7 @@ mod test_qtfile {
 
     #[test]
     fn test_parse_camouflage_vga_mov() {
-        let q = qtfile::parse_qtfile("tests/samples/camouflage_vga.mov");
+        let q = qtfile::parse_file("tests/samples/camouflage_vga.mov".into());
 
         println!("{:#?}", q);
     }
