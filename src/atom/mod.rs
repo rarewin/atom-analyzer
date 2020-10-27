@@ -7,7 +7,6 @@ pub mod wide;
 
 use std::io::{Read, Seek, SeekFrom};
 
-use anyhow::Result;
 use byteorder::{BigEndian, ReadBytesExt};
 use thiserror::Error;
 
@@ -36,6 +35,12 @@ pub enum AtomSeekError {
     TypeError(u64),
     #[error("unexpected error at {0}")]
     UnexpectedError(u64),
+
+    #[error("")]
+    NoMoreAtom,
+
+    #[error(transparent)]
+    IoError(#[from] std::io::Error),
 }
 
 impl Atom {
@@ -51,7 +56,7 @@ impl Atom {
     }
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomSeekError> {
     let atom_head = parse_atom_head(r)?;
 
     r.seek(SeekFrom::Start(atom_head.atom_offset))?;
@@ -94,10 +99,20 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom> {
 ///     }
 /// );
 /// ```
-pub fn parse_atom_head<R: Read + Seek>(r: &mut R) -> Result<AtomHead> {
+pub fn parse_atom_head<R: Read + Seek>(r: &mut R) -> Result<AtomHead, AtomSeekError> {
     let atom_offset = r.seek(SeekFrom::Current(0))?;
 
-    let atom_size = r.read_u32::<BigEndian>()? as u64;
+    let atom_size = match r.read_u32::<BigEndian>() {
+        Ok(val) => val as u64,
+        Err(e) => {
+            if e.kind() == std::io::ErrorKind::UnexpectedEof {
+                return Err(AtomSeekError::NoMoreAtom);
+            } else {
+                panic!();
+            }
+        }
+    };
+
     let atom_type = r.read_u32::<BigEndian>()?;
 
     if atom_size == 0 {

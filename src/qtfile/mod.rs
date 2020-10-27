@@ -3,16 +3,20 @@ use std::io::BufReader;
 use std::io::{Read, Seek, SeekFrom};
 use std::path::PathBuf;
 
-use anyhow::{Error, Result};
 use byteorder::{BigEndian, ReadBytesExt};
 use thiserror::Error;
 
 use super::atom::{self, Atom};
 
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug)]
 pub enum QtFileError {
     #[error("atom size `{0}' is invalid")]
     InvalidAtomSize(u64),
+
+    #[error(transparent)]
+    IoError(#[from] std::io::Error),
+    #[error(transparent)]
+    AtomSeekError(#[from] atom::AtomSeekError),
 }
 
 #[derive(Debug)]
@@ -20,13 +24,13 @@ pub struct QtFile {
     atoms: Vec<Atom>,
 }
 
-pub fn get_atom_type<R: Read + Seek>(r: &mut R) -> Result<u32> {
+pub fn get_atom_type<R: Read + Seek>(r: &mut R) -> Result<u32, QtFileError> {
     let atom_offset = r.seek(SeekFrom::Current(0))?;
     let atom_size = r.read_u32::<BigEndian>()? as u64;
     let atom_type = r.read_u32::<BigEndian>()?;
 
     if r.seek(SeekFrom::Start(atom_offset + atom_size)).is_err() {
-        return Err(Error::new(QtFileError::InvalidAtomSize(atom_size)));
+        return Err(QtFileError::InvalidAtomSize(atom_size));
     }
 
     r.seek(SeekFrom::Start(atom_offset))?;
@@ -34,7 +38,7 @@ pub fn get_atom_type<R: Read + Seek>(r: &mut R) -> Result<u32> {
     Ok(atom_type)
 }
 
-pub fn parse_file(file_name: PathBuf) -> Result<QtFile> {
+pub fn parse_file(file_name: PathBuf) -> Result<QtFile, QtFileError> {
     let f = File::open(file_name)?;
     let mut reader = BufReader::new(f);
     let mut atoms = Vec::<Atom>::new();
@@ -43,7 +47,11 @@ pub fn parse_file(file_name: PathBuf) -> Result<QtFile> {
         atoms.push(a);
     }
 
-    Ok(QtFile { atoms })
+    match atom::parse(&mut reader) {
+        Err(atom::AtomSeekError::NoMoreAtom) => Ok(QtFile { atoms }),
+        Err(e) => Err(QtFileError::AtomSeekError(e)),
+        Ok(_) => panic!(),
+    }
 }
 
 #[cfg(test)]
