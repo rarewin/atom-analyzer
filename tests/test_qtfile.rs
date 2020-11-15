@@ -1,45 +1,44 @@
-use std::fs::File;
-use std::io::BufReader;
+use std::path::PathBuf;
 
 use atom_analyzer::atom::{self, ftyp, mdat, moov, wide};
 use atom_analyzer::element::{qtfile_datetime, qtfile_matrix};
+use atom_analyzer::qtfile;
 
 #[test]
 fn test_camouflage_vga_mov_manual() {
-    let file_name = "tests/samples/camouflage_vga.mov";
-    let f = File::open(file_name).expect("file open error");
-    let mut reader = BufReader::new(f);
+    let file_name = PathBuf::from("tests/samples/camouflage_vga.mov");
+    let mut qt = qtfile::parse_file(file_name).unwrap();
 
     assert_eq!(
-        atom::parse(&mut reader).unwrap(),
-        atom::Atom::Ftyp(Box::new(ftyp::FtypAtom {
+        qt.next(),
+        Some(atom::Atom::Ftyp(Box::new(ftyp::FtypAtom {
             atom_offset: 0,
             atom_size: 20,
             major_brand: ftyp::Brand::QuickTimeMovieFile,
             minor_version: 0x00000200,
             compatible_brands: vec![ftyp::Brand::QuickTimeMovieFile]
-        }))
+        })))
     );
 
     assert_eq!(
-        atom::parse(&mut reader).unwrap(),
-        atom::Atom::Wide(Box::new(wide::WideAtom {
+        qt.next(),
+        Some(atom::Atom::Wide(Box::new(wide::WideAtom {
             atom_offset: 20,
             atom_size: 8
-        })),
+        }))),
     );
 
     assert_eq!(
-        atom::parse(&mut reader).unwrap(),
-        atom::Atom::Mdat(Box::new(mdat::MdatAtom {
+        qt.next(),
+        Some(atom::Atom::Mdat(Box::new(mdat::MdatAtom {
             atom_offset: 28,
             atom_size: 0x6170
-        })),
+        }))),
     );
 
     assert_eq!(
-        atom::parse(&mut reader).unwrap(),
-        atom::Atom::Moov(Box::new(moov::MoovAtom {
+        qt.next(),
+        Some(atom::Atom::Moov(Box::new(moov::MoovAtom {
             atom_head: atom::AtomHead {
                 atom_type: atom::moov::ATOM_ID,
                 atom_offset: 0x618c,
@@ -70,6 +69,6 @@ fn test_camouflage_vga_mov_manual() {
                 current_time: qtfile_datetime::QtFileDateTime::new(0),
                 next_track_id: 2,
             }),
-        })),
+        })),)
     );
 }
