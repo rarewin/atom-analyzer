@@ -1,12 +1,13 @@
 use std::fmt;
 use std::io::{Read, Seek};
 
-use anyhow::Result;
 use byteorder::{BigEndian, ReadBytesExt};
 use fixed::{
     types::extra::{U16, U30},
     FixedU32,
 };
+
+use crate::element::ElementParseError;
 
 #[derive(PartialEq)]
 pub struct QtFileMatrix {
@@ -36,7 +37,7 @@ impl QtFileMatrix {
         }
     }
 
-    pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Self> {
+    pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Self, ElementParseError> {
         let mut matrix = [0_u32; 9];
 
         for element in &mut matrix {

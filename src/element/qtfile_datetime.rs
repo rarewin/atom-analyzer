@@ -1,11 +1,12 @@
 use std::fmt;
 use std::io::{Read, Seek};
 
-use anyhow::Result;
 use byteorder::{BigEndian, ReadBytesExt};
 use chrono::prelude::*;
 use lazy_static::lazy_static;
 use time::Duration;
+
+use crate::element::ElementParseError;
 
 lazy_static! {
     pub static ref REFERENCE_DATETIME: DateTime<Utc> = Utc.ymd(1904, 1, 1).and_hms(0, 0, 0);
@@ -23,7 +24,7 @@ impl QtFileDateTime {
         QtFileDateTime { value, utc }
     }
 
-    pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Self> {
+    pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Self, ElementParseError> {
         Ok(QtFileDateTime::new(r.read_u32::<BigEndian>()?))
     }
 }
