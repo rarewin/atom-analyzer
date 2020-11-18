@@ -10,6 +10,8 @@ use std::io::{Read, Seek, SeekFrom};
 use byteorder::{BigEndian, ReadBytesExt};
 use thiserror::Error;
 
+use crate::element::ElementParseError;
+
 #[derive(Debug, PartialEq)]
 pub enum Atom {
     Ftyp(Box<ftyp::FtypAtom>),
@@ -28,7 +30,7 @@ pub struct AtomHead {
 }
 
 #[derive(Debug, Error)]
-pub enum AtomSeekError {
+pub enum AtomParseError {
     #[error("failed to seek at {0}")]
     SeekFailed(u64),
     #[error("type error at {0}")]
@@ -41,6 +43,8 @@ pub enum AtomSeekError {
 
     #[error(transparent)]
     IoError(#[from] std::io::Error),
+    #[error(transparent)]
+    ElementParseError(#[from] ElementParseError),
 }
 
 impl Atom {
@@ -56,7 +60,7 @@ impl Atom {
     }
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomSeekError> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomParseError> {
     let atom_head = parse_atom_head(r)?;
 
     r.seek(SeekFrom::Start(atom_head.atom_offset))?;
@@ -99,14 +103,14 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomSeekError> {
 ///     }
 /// );
 /// ```
-pub fn parse_atom_head<R: Read + Seek>(r: &mut R) -> Result<AtomHead, AtomSeekError> {
+pub fn parse_atom_head<R: Read + Seek>(r: &mut R) -> Result<AtomHead, AtomParseError> {
     let atom_offset = r.seek(SeekFrom::Current(0))?;
 
     let atom_size = match r.read_u32::<BigEndian>() {
         Ok(val) => val as u64,
         Err(e) => {
             if e.kind() == std::io::ErrorKind::UnexpectedEof {
-                return Err(AtomSeekError::NoMoreAtom);
+                return Err(AtomParseError::NoMoreAtom);
             } else {
                 panic!();
             }

@@ -2,7 +2,7 @@ use std::io::{Read, Seek, SeekFrom};
 
 use byteorder::{BigEndian, ReadBytesExt};
 
-use crate::atom;
+use crate::atom::{self, AtomParseError};
 
 #[derive(Debug, PartialEq)]
 pub enum Brand {
@@ -33,7 +33,7 @@ pub struct FtypAtom {
     pub compatible_brands: Vec<Brand>,
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, atom::AtomSeekError> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, AtomParseError> {
     let atom_head = atom::parse_atom_head(r)?;
 
     let atom_offset = atom_head.atom_offset;
@@ -41,7 +41,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, atom::AtomSeekError>
     let atom_type = atom_head.atom_type;
 
     if atom_type != ATOM_ID {
-        return Err(atom::AtomSeekError::TypeError(atom_offset + 4));
+        return Err(AtomParseError::TypeError(atom_offset + 4));
     }
 
     let major_brand = match_brand(r.read_u32::<BigEndian>()?);
@@ -53,14 +53,12 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, atom::AtomSeekError>
             b.push(if let Ok(value) = r.read_u32::<BigEndian>() {
                 match_brand(value)
             } else {
-                return Err(atom::AtomSeekError::UnexpectedError(
-                    atom_offset + 8 + i * 4,
-                ));
+                return Err(AtomParseError::UnexpectedError(atom_offset + 8 + i * 4));
             })
         }
         b
     } else {
-        return Err(atom::AtomSeekError::UnexpectedError(atom_offset + 8));
+        return Err(AtomParseError::UnexpectedError(atom_offset + 8));
     };
 
     Ok(FtypAtom {

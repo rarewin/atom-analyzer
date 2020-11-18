@@ -1,9 +1,8 @@
 use std::path::PathBuf;
 
-use anyhow::Result;
 use clap::Clap;
 
-use atom_analyzer::qtfile;
+use atom_analyzer::qtfile::{self, QtFileError};
 
 #[derive(Clap)]
 #[clap(name=env!("CARGO_PKG_NAME"))]
@@ -12,7 +11,7 @@ struct Opts {
     input: PathBuf,
 }
 
-fn main() -> Result<()> {
+fn main() -> Result<(), QtFileError> {
     let opts = Opts::parse();
 
     let t = qtfile::parse_file(opts.input)?;

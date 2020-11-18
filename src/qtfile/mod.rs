@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use byteorder::{BigEndian, ReadBytesExt};
 use thiserror::Error;
 
-use super::atom::{self, Atom};
+use super::atom::{self, Atom, AtomParseError};
 
 #[derive(Error, Debug)]
 pub enum QtFileError {
@@ -14,9 +14,9 @@ pub enum QtFileError {
     InvalidAtomSize(u64),
 
     #[error(transparent)]
-    IoError(#[from] std::io::Error),
+    AtomParseError(#[from] AtomParseError),
     #[error(transparent)]
-    AtomSeekError(#[from] atom::AtomSeekError),
+    IoError(#[from] std::io::Error),
 }
 
 #[derive(Debug)]
@@ -58,9 +58,9 @@ pub fn parse_file(file_name: PathBuf) -> Result<QtFile, QtFileError> {
     loop {
         match atom::parse(&mut reader) {
             Ok(a) => atoms.push(a),
-            Err(atom::AtomSeekError::NoMoreAtom) => break,
+            Err(atom::AtomParseError::NoMoreAtom) => break,
             Err(e) => {
-                return Err(QtFileError::AtomSeekError(e));
+                return Err(QtFileError::AtomParseError(e));
             }
         }
     }
