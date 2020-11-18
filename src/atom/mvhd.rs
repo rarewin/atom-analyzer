@@ -39,7 +39,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MvhdAtom> {
     }
 
     let atom_version = r.read_u8()?;
-    let mut atom_flags = [0 as u8; 3];
+    let mut atom_flags = [0_u8; 3];
 
     r.read_exact(&mut atom_flags)?;
 
@@ -51,10 +51,10 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MvhdAtom> {
     let preferred_rate = r.read_u32::<BigEndian>()?;
     let preferred_volume = r.read_u16::<BigEndian>()?;
 
-    let mut reserved = [0 as u8; 10];
+    let mut reserved = [0_u8; 10];
     r.read_exact(&mut reserved)?;
 
-    let mut matrix = [0 as u32; 9];
+    let mut matrix = [0_u32; 9];
     for element in &mut matrix {
         *element = r.read_u32::<BigEndian>()?;
     }
