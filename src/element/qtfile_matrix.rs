@@ -1,5 +1,8 @@
 use std::fmt;
+use std::io::{Read, Seek};
 
+use anyhow::Result;
+use byteorder::{BigEndian, ReadBytesExt};
 use fixed::{
     types::extra::{U16, U30},
     FixedU32,
@@ -31,6 +34,16 @@ impl QtFileMatrix {
             v: FixedU32::<U30>::from_bits(value[5]),
             w: FixedU32::<U30>::from_bits(value[8]),
         }
+    }
+
+    pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Self> {
+        let mut matrix = [0_u32; 9];
+
+        for element in &mut matrix {
+            *element = r.read_u32::<BigEndian>()?;
+        }
+
+        Ok(QtFileMatrix::new(&matrix))
     }
 }
 

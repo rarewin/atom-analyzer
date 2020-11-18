@@ -1,5 +1,8 @@
 use std::fmt;
+use std::io::{Read, Seek};
 
+use anyhow::Result;
+use byteorder::{BigEndian, ReadBytesExt};
 use chrono::prelude::*;
 use lazy_static::lazy_static;
 use time::Duration;
@@ -18,6 +21,10 @@ impl QtFileDateTime {
     pub fn new(value: u32) -> Self {
         let utc = *REFERENCE_DATETIME + Duration::seconds(value as i64);
         QtFileDateTime { value, utc }
+    }
+
+    pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Self> {
+        Ok(QtFileDateTime::new(r.read_u32::<BigEndian>()?))
     }
 }
 

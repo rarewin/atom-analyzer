@@ -54,22 +54,16 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MvhdAtom> {
     let mut reserved = [0_u8; 10];
     r.read_exact(&mut reserved)?;
 
-    let mut matrix = [0_u32; 9];
-    for element in &mut matrix {
-        *element = r.read_u32::<BigEndian>()?;
-    }
-
-    let matrix_structure = element::qtfile_matrix::QtFileMatrix::new(&matrix);
-
-    let preview_time = element::qtfile_datetime::QtFileDateTime::new(r.read_u32::<BigEndian>()?);
+    let matrix_structure = element::qtfile_matrix::QtFileMatrix::parse(r)?;
+    let preview_time = element::qtfile_datetime::QtFileDateTime::parse(r)?;
     let preview_duration = r.read_u32::<BigEndian>()?;
 
-    let poster_time = element::qtfile_datetime::QtFileDateTime::new(r.read_u32::<BigEndian>()?);
+    let poster_time = element::qtfile_datetime::QtFileDateTime::parse(r)?;
 
-    let selection_time = element::qtfile_datetime::QtFileDateTime::new(r.read_u32::<BigEndian>()?);
+    let selection_time = element::qtfile_datetime::QtFileDateTime::parse(r)?;
     let selection_duration = r.read_u32::<BigEndian>()?;
 
-    let current_time = element::qtfile_datetime::QtFileDateTime::new(r.read_u32::<BigEndian>()?);
+    let current_time = element::qtfile_datetime::QtFileDateTime::parse(r)?;
 
     let next_track_id = r.read_u32::<BigEndian>()?;
 
