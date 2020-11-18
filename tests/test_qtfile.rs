@@ -1,5 +1,10 @@
 use std::path::PathBuf;
 
+use fixed::{
+    types::extra::{U16, U8},
+    FixedU16, FixedU32,
+};
+
 use atom_analyzer::atom::{self, ftyp, mdat, moov, wide};
 use atom_analyzer::element::{qtfile_datetime, qtfile_matrix};
 use atom_analyzer::qtfile;
@@ -69,6 +74,37 @@ fn test_camouflage_vga_mov_manual() {
                 current_time: qtfile_datetime::QtFileDateTime::new(0),
                 next_track_id: 2,
             }),
+            trak_atom: vec![atom::trak::TrakAtom {
+                atom_head: atom::AtomHead {
+                    atom_offset: 0x6200,
+                    atom_size: 0x3e1,
+                    atom_type: atom::trak::ATOM_ID,
+                },
+                tkhd_atom: atom::tkhd::TkhdAtom {
+                    atom_head: atom::AtomHead {
+                        atom_offset: 0x6208,
+                        atom_size: 0x5c,
+                        atom_type: atom::tkhd::ATOM_ID,
+                    },
+                    atom_version: 0,
+                    atom_flags: [0, 0, 3],
+                    creation_time: qtfile_datetime::QtFileDateTime::new(0),
+                    modification_time: qtfile_datetime::QtFileDateTime::new(0),
+                    track_id: 1,
+                    reserved0: 0,
+                    duration: 1000,
+                    reserved1: [0, 0, 0, 0, 0, 0, 0, 0],
+                    layer: 0,
+                    alternate_group: 0,
+                    volume: FixedU16::<U8>::from_num(0),
+                    reserved2: 0,
+                    matrix_structure: qtfile_matrix::QtFileMatrix::new(&[
+                        0x10000, 0, 0, 0, 0x10000, 0, 0, 0, 0x40000000
+                    ]),
+                    track_width: FixedU32::<U16>::from_num(640),
+                    track_height: FixedU32::<U16>::from_num(400),
+                }
+            }],
         })),)
     );
 }
