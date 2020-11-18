@@ -1,9 +1,8 @@
 use std::io::{Read, Seek};
 
-use anyhow::{Error, Result};
 use byteorder::{BigEndian, ReadBytesExt};
 
-use crate::atom;
+use crate::atom::{self, AtomParseError};
 use crate::element;
 
 pub const ATOM_ID: u32 = 0x6d76_6864; // 'mvhd'
@@ -29,13 +28,11 @@ pub struct MvhdAtom {
     pub next_track_id: u32,
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MvhdAtom> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MvhdAtom, AtomParseError> {
     let atom_head = atom::parse_atom_head(r)?;
 
     if atom_head.atom_type != ATOM_ID {
-        return Err(Error::new(atom::AtomSeekError::TypeError(
-            atom_head.atom_offset,
-        )));
+        return Err(AtomParseError::TypeError(atom_head.atom_offset));
     }
 
     let atom_version = r.read_u8()?;

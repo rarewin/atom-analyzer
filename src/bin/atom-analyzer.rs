@@ -2,10 +2,9 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 
-use anyhow::Result;
 use clap::Clap;
 
-use atom_analyzer::atom;
+use atom_analyzer::atom::{self, AtomParseError};
 
 #[derive(Clap)]
 #[clap(name=env!("CARGO_PKG_NAME"))]
@@ -14,7 +13,7 @@ struct Opts {
     input: PathBuf,
 }
 
-fn main() -> Result<()> {
+fn main() -> Result<(), AtomParseError> {
     let opts = Opts::parse();
 
     let f = File::open(opts.input)?;
