@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::BufReader;
 use std::io::{Read, Seek, SeekFrom};
+use std::path::PathBuf;
 
 use byteorder::{BigEndian, ReadBytesExt};
 use thiserror::Error;
@@ -23,6 +24,18 @@ pub struct QtFile {
     atoms: Vec<Atom>,
 }
 
+impl Iterator for QtFile {
+    type Item = Atom;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.atoms.reverse();
+        let atom = self.atoms.pop();
+        self.atoms.reverse();
+
+        atom
+    }
+}
+
 pub fn get_atom_type<R: Read + Seek>(r: &mut R) -> Result<u32, QtFileError> {
     let atom_offset = r.seek(SeekFrom::Current(0))?;
     let atom_size = r.read_u32::<BigEndian>()? as u64;
@@ -37,13 +50,19 @@ pub fn get_atom_type<R: Read + Seek>(r: &mut R) -> Result<u32, QtFileError> {
     Ok(atom_type)
 }
 
-pub fn parse_qtfile(file_name: &str) -> Result<QtFile, QtFileError> {
+pub fn parse_file(file_name: PathBuf) -> Result<QtFile, QtFileError> {
     let f = File::open(file_name)?;
     let mut reader = BufReader::new(f);
     let mut atoms = Vec::<Atom>::new();
 
-    for _ in 0..4 {
-        atoms.push(atom::parse(&mut reader)?)
+    loop {
+        match atom::parse(&mut reader) {
+            Ok(a) => atoms.push(a),
+            Err(atom::AtomParseError::NoMoreAtom) => break,
+            Err(e) => {
+                return Err(QtFileError::AtomParseError(e));
+            }
+        }
     }
 
     Ok(QtFile { atoms })
@@ -52,6 +71,7 @@ pub fn parse_qtfile(file_name: &str) -> Result<QtFile, QtFileError> {
 #[cfg(test)]
 mod test_qtfile {
 
+    use crate::atom;
     use crate::qtfile;
 
     use std::io::Cursor;
@@ -68,8 +88,21 @@ mod test_qtfile {
 
     #[test]
     fn test_parse_camouflage_vga_mov() {
-        let q = qtfile::parse_qtfile("tests/samples/camouflage_vga.mov");
+        let mut q = qtfile::parse_file("tests/samples/camouflage_vga.mov".into()).unwrap();
 
-        println!("{:#?}", q);
+        // println!("{:#?}", q);
+
+        let ftyp = q.next();
+
+        assert_eq!(
+            ftyp,
+            Some(atom::Atom::Ftyp(Box::new(atom::ftyp::FtypAtom {
+                atom_offset: 0,
+                atom_size: 0x14,
+                major_brand: atom::ftyp::Brand::QuickTimeMovieFile,
+                minor_version: 0x0200,
+                compatible_brands: vec![atom::ftyp::Brand::QuickTimeMovieFile],
+            })))
+        );
     }
 }
