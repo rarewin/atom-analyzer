@@ -112,10 +112,18 @@ fn test_camouflage_vga_mov_manual() {
                     },
                     elst_atom: Some(atom::elst::ElstAtom {
                         atom_head: atom::AtomHead {
-                            atom_offset: 0,
-                            atom_size: 0,
-                            atom_type: 0,
-                        }
+                            atom_offset: 0x626c,
+                            atom_size: 0x1c,
+                            atom_type: atom::elst::ATOM_ID,
+                        },
+                        atom_version: 0,
+                        atom_flags: [0, 0, 0],
+                        number_of_entries: 1,
+                        edit_list_table: vec![atom::elst::EditListTableEntry {
+                            track_duration: 1000,
+                            media_time: 1024,
+                            media_rate: FixedU32::<U16>::from_num(1),
+                        }],
                     }),
                 },),
             }],
