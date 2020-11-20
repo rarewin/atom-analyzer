@@ -9,12 +9,14 @@ pub struct TrakAtom {
     pub atom_head: atom::AtomHead,
     pub tkhd_atom: atom::tkhd::TkhdAtom,
     pub edts_atom: Option<atom::edts::EdtsAtom>,
+    pub mdia_atom: atom::mdia::MdiaAtom,
 }
 
 pub fn parse<R: Read + Seek>(r: &mut R) -> Result<TrakAtom, AtomParseError> {
     let atom_head = atom::parse_atom_head(r)?;
     let mut tkhd_atom: Option<atom::tkhd::TkhdAtom> = None;
     let mut edts_atom: Option<atom::edts::EdtsAtom> = None;
+    let mut mdia_atom: Option<atom::mdia::MdiaAtom> = None;
 
     if atom_head.atom_type != ATOM_ID {
         return Err(atom::AtomParseError::TypeError(atom_head.atom_offset));
@@ -26,6 +28,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<TrakAtom, AtomParseError> {
         match atom {
             atom::Atom::Tkhd(m) => tkhd_atom = Some(*m),
             atom::Atom::Edts(e) => edts_atom = Some(*e),
+            atom::Atom::Mdia(m) => mdia_atom = Some(*m),
             _ => eprintln!("{:?}", atom),
         }
 
@@ -38,7 +41,16 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<TrakAtom, AtomParseError> {
         Some(a) => a,
         None => {
             return Err(atom::AtomParseError::RequiredAtomNotFound(
-                atom_head.atom_type,
+                atom::tkhd::ATOM_ID,
+            ))
+        }
+    };
+
+    let mdia_atom = match mdia_atom {
+        Some(a) => a,
+        None => {
+            return Err(atom::AtomParseError::RequiredAtomNotFound(
+                atom::mdia::ATOM_ID,
             ))
         }
     };
@@ -49,5 +61,6 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<TrakAtom, AtomParseError> {
         atom_head,
         tkhd_atom,
         edts_atom,
+        mdia_atom,
     })
 }
