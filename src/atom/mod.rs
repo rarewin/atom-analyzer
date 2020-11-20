@@ -1,3 +1,5 @@
+pub mod edts;
+pub mod elst;
 pub mod free;
 pub mod ftyp;
 pub mod mdat;
@@ -25,6 +27,8 @@ pub enum Atom {
     Mvhd(Box<mvhd::MvhdAtom>),
     Trak(Box<trak::TrakAtom>),
     Tkhd(Box<tkhd::TkhdAtom>),
+    Edts(Box<edts::EdtsAtom>),
+    Elst(Box<elst::ElstAtom>),
     Unimplemented(AtomHead),
 }
 
@@ -86,6 +90,8 @@ impl Atom {
             Atom::Mvhd(m) => m.atom_head.atom_offset,
             Atom::Trak(t) => t.atom_head.atom_offset,
             Atom::Tkhd(t) => t.atom_head.atom_offset,
+            Atom::Edts(e) => e.atom_head.atom_offset,
+            Atom::Elst(e) => e.atom_head.atom_offset,
             Atom::Unimplemented(_) => unimplemented!(),
         };
     }
@@ -105,6 +111,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomParseError> {
         mvhd::ATOM_ID => Ok(Atom::Mvhd(Box::new(mvhd::parse(r)?))),
         trak::ATOM_ID => Ok(Atom::Trak(Box::new(trak::parse(r)?))),
         tkhd::ATOM_ID => Ok(Atom::Tkhd(Box::new(tkhd::parse(r)?))),
+        edts::ATOM_ID => Ok(Atom::Edts(Box::new(edts::parse(r)?))),
         _ => {
             r.seek(SeekFrom::Start(atom_head.atom_offset + atom_head.atom_size))?;
             Ok(Atom::Unimplemented(atom_head))

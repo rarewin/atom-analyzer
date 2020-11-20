@@ -103,7 +103,21 @@ fn test_camouflage_vga_mov_manual() {
                     ]),
                     track_width: FixedU32::<U16>::from_num(640),
                     track_height: FixedU32::<U16>::from_num(400),
-                }
+                },
+                edts_atom: Some(atom::edts::EdtsAtom {
+                    atom_head: atom::AtomHead {
+                        atom_offset: 0x6264,
+                        atom_size: 0x24,
+                        atom_type: atom::edts::ATOM_ID,
+                    },
+                    elst_atom: Some(atom::elst::ElstAtom {
+                        atom_head: atom::AtomHead {
+                            atom_offset: 0,
+                            atom_size: 0,
+                            atom_type: 0,
+                        }
+                    }),
+                },),
             }],
         })),)
     );
