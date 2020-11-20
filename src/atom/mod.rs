@@ -1,8 +1,14 @@
+pub mod edts;
+pub mod elst;
 pub mod free;
 pub mod ftyp;
 pub mod mdat;
+pub mod mdhd;
+pub mod mdia;
 pub mod moov;
 pub mod mvhd;
+pub mod tkhd;
+pub mod trak;
 pub mod wide;
 
 use std::fmt;
@@ -21,6 +27,13 @@ pub enum Atom {
     Free(Box<free::FreeAtom>),
     Moov(Box<moov::MoovAtom>),
     Mvhd(Box<mvhd::MvhdAtom>),
+    Trak(Box<trak::TrakAtom>),
+    Tkhd(Box<tkhd::TkhdAtom>),
+    Edts(Box<edts::EdtsAtom>),
+    Elst(Box<elst::ElstAtom>),
+    Mdia(Box<mdia::MdiaAtom>),
+    Mdhd(Box<mdhd::MdhdAtom>),
+    Unimplemented(AtomHead),
 }
 
 #[derive(PartialEq)]
@@ -36,6 +49,8 @@ pub enum AtomParseError {
     SeekFailed(u64),
     #[error("type error at {0}")]
     TypeError(u64),
+    #[error("required atom {0} was not found")]
+    RequiredAtomNotFound(u32),
     #[error("unexpected error at {0}")]
     UnexpectedError(u64),
 
@@ -77,6 +92,13 @@ impl Atom {
             Atom::Free(f) => f.atom_offset,
             Atom::Moov(m) => m.atom_head.atom_offset,
             Atom::Mvhd(m) => m.atom_head.atom_offset,
+            Atom::Trak(t) => t.atom_head.atom_offset,
+            Atom::Tkhd(t) => t.atom_head.atom_offset,
+            Atom::Edts(e) => e.atom_head.atom_offset,
+            Atom::Elst(e) => e.atom_head.atom_offset,
+            Atom::Mdia(m) => m.atom_head.atom_offset,
+            Atom::Mdhd(m) => m.atom_head.atom_offset,
+            Atom::Unimplemented(_) => unimplemented!(),
         };
     }
 }
@@ -93,7 +115,15 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomParseError> {
         free::ATOM_ID => Ok(Atom::Free(Box::new(free::parse(r)?))),
         moov::ATOM_ID => Ok(Atom::Moov(Box::new(moov::parse(r)?))),
         mvhd::ATOM_ID => Ok(Atom::Mvhd(Box::new(mvhd::parse(r)?))),
-        _ => unimplemented!("unknown atom"),
+        trak::ATOM_ID => Ok(Atom::Trak(Box::new(trak::parse(r)?))),
+        tkhd::ATOM_ID => Ok(Atom::Tkhd(Box::new(tkhd::parse(r)?))),
+        edts::ATOM_ID => Ok(Atom::Edts(Box::new(edts::parse(r)?))),
+        mdia::ATOM_ID => Ok(Atom::Mdia(Box::new(mdia::parse(r)?))),
+        mdhd::ATOM_ID => Ok(Atom::Mdhd(Box::new(mdhd::parse(r)?))),
+        _ => {
+            r.seek(SeekFrom::Start(atom_head.atom_offset + atom_head.atom_size))?;
+            Ok(Atom::Unimplemented(atom_head))
+        }
     }
 }
 
