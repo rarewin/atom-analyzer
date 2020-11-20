@@ -5,9 +5,10 @@ pub mod moov;
 pub mod mvhd;
 pub mod wide;
 
+use std::fmt;
 use std::io::{Read, Seek, SeekFrom};
 
-use byteorder::{BigEndian, ReadBytesExt};
+use byteorder::{BigEndian, ByteOrder, ReadBytesExt};
 use thiserror::Error;
 
 use crate::element::ElementParseError;
@@ -22,7 +23,7 @@ pub enum Atom {
     Mvhd(Box<mvhd::MvhdAtom>),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 pub struct AtomHead {
     pub atom_offset: u64,
     pub atom_size: u64,
@@ -45,6 +46,26 @@ pub enum AtomParseError {
     IoError(#[from] std::io::Error),
     #[error(transparent)]
     ElementParseError(#[from] ElementParseError),
+}
+
+impl fmt::Debug for AtomHead {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut buf = [0; 4];
+        BigEndian::write_u32(&mut buf, self.atom_type);
+
+        f.debug_struct("AtomHead")
+            .field("offset", &format_args!("0x{:016x}", self.atom_offset))
+            .field("size", &format_args!("0x{:016x}", self.atom_size))
+            .field(
+                "type",
+                &format_args!(
+                    "{:?} (0x{:08x})",
+                    buf.iter().map(|c| char::from(*c)).collect::<String>(),
+                    self.atom_type
+                ),
+            )
+            .finish()
+    }
 }
 
 impl Atom {
