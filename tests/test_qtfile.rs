@@ -131,6 +131,13 @@ fn test_camouflage_vga_mov_manual() {
                         atom_offset: 0x6288,
                         atom_size: 0x359,
                         atom_type: atom::mdia::ATOM_ID,
+                    },
+                    mdhd_atom: atom::mdhd::MdhdAtom {
+                        atom_head: atom::AtomHead {
+                            atom_offset: 0x6290,
+                            atom_size: 0x20,
+                            atom_type: atom::mdhd::ATOM_ID,
+                        }
                     }
                 }
             }],
