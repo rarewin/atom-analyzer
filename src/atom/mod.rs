@@ -86,10 +86,10 @@ impl fmt::Debug for AtomHead {
 impl Atom {
     pub fn get_offset(&self) {
         match self {
-            Atom::Ftyp(f) => f.atom_offset,
-            Atom::Mdat(m) => m.atom_offset,
-            Atom::Wide(w) => w.atom_offset,
-            Atom::Free(f) => f.atom_offset,
+            Atom::Ftyp(f) => f.atom_head.atom_offset,
+            Atom::Mdat(m) => m.atom_head.atom_offset,
+            Atom::Wide(w) => w.atom_head.atom_offset,
+            Atom::Free(f) => f.atom_head.atom_offset,
             Atom::Moov(m) => m.atom_head.atom_offset,
             Atom::Mvhd(m) => m.atom_head.atom_offset,
             Atom::Trak(t) => t.atom_head.atom_offset,
@@ -118,6 +118,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomParseError> {
         trak::ATOM_ID => Ok(Atom::Trak(Box::new(trak::parse(r)?))),
         tkhd::ATOM_ID => Ok(Atom::Tkhd(Box::new(tkhd::parse(r)?))),
         edts::ATOM_ID => Ok(Atom::Edts(Box::new(edts::parse(r)?))),
+        elst::ATOM_ID => Ok(Atom::Elst(Box::new(elst::parse(r)?))),
         mdia::ATOM_ID => Ok(Atom::Mdia(Box::new(mdia::parse(r)?))),
         mdhd::ATOM_ID => Ok(Atom::Mdhd(Box::new(mdhd::parse(r)?))),
         _ => {
@@ -176,7 +177,7 @@ pub fn parse_atom_head<R: Read + Seek>(r: &mut R) -> Result<AtomHead, AtomParseE
 
     // extended size
     let atom_size = if atom_size == 1 {
-        r.read_u64::<BigEndian>().unwrap()
+        r.read_u64::<BigEndian>()?
     } else {
         atom_size
     };

@@ -26,8 +26,7 @@ fn match_brand(val: u32) -> Brand {
 
 #[derive(Debug, PartialEq)]
 pub struct FtypAtom {
-    pub atom_offset: u64,
-    pub atom_size: u64,
+    pub atom_head: atom::AtomHead,
     pub major_brand: Brand,
     pub minor_version: u32,
     pub compatible_brands: Vec<Brand>,
@@ -62,8 +61,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, AtomParseError> {
     };
 
     Ok(FtypAtom {
-        atom_offset,
-        atom_size,
+        atom_head,
         major_brand,
         minor_version,
         compatible_brands,
@@ -89,8 +87,11 @@ mod test_ftyp {
         assert_eq!(
             atom.unwrap(),
             ftyp::FtypAtom {
-                atom_offset: 0,
-                atom_size: 20,
+                atom_head: crate::atom::AtomHead {
+                    atom_offset: 0,
+                    atom_size: 20,
+                    atom_type: ftyp::ATOM_ID,
+                },
                 major_brand: ftyp::Brand::QuickTimeMovieFile,
                 minor_version: 0x20040600,
                 compatible_brands: vec![Brand::Other(0)]
@@ -109,8 +110,11 @@ mod test_ftyp {
         assert_eq!(
             ftyp::parse(&mut buf).unwrap(),
             ftyp::FtypAtom {
-                atom_offset: 0,
-                atom_size: 0x1c,
+                atom_head: crate::atom::AtomHead {
+                    atom_offset: 0,
+                    atom_size: 0x1c,
+                    atom_type: ftyp::ATOM_ID,
+                },
                 major_brand: ftyp::Brand::QuickTimeMovieFile,
                 minor_version: 0x20040600,
                 compatible_brands: vec![Brand::Other(0)]

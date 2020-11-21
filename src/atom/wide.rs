@@ -6,8 +6,7 @@ pub const ATOM_ID: u32 = 0x7769_6465; // 'wide'
 
 #[derive(Debug, PartialEq)]
 pub struct WideAtom {
-    pub atom_offset: u64,
-    pub atom_size: u64,
+    pub atom_head: atom::AtomHead,
 }
 
 pub fn parse<R: Read + Seek>(r: &mut R) -> Result<WideAtom, AtomParseError> {
@@ -23,8 +22,5 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<WideAtom, AtomParseError> {
 
     r.seek(SeekFrom::Start(atom_offset + atom_size))?;
 
-    Ok(WideAtom {
-        atom_offset,
-        atom_size,
-    })
+    Ok(WideAtom { atom_head })
 }
