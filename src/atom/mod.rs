@@ -177,7 +177,7 @@ pub fn parse_atom_head<R: Read + Seek>(r: &mut R) -> Result<AtomHead, AtomParseE
 
     // extended size
     let atom_size = if atom_size == 1 {
-        r.read_u64::<BigEndian>().unwrap()
+        r.read_u64::<BigEndian>()?
     } else {
         atom_size
     };
