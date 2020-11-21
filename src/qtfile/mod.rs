@@ -97,8 +97,11 @@ mod test_qtfile {
         assert_eq!(
             ftyp,
             Some(atom::Atom::Ftyp(Box::new(atom::ftyp::FtypAtom {
-                atom_offset: 0,
-                atom_size: 0x14,
+                atom_head: atom::AtomHead {
+                    atom_offset: 0,
+                    atom_size: 0x14,
+                    atom_type: atom::ftyp::ATOM_ID,
+                },
                 major_brand: atom::ftyp::Brand::QuickTimeMovieFile,
                 minor_version: 0x0200,
                 compatible_brands: vec![atom::ftyp::Brand::QuickTimeMovieFile],

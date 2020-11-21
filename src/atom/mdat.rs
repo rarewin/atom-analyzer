@@ -6,8 +6,7 @@ pub const ATOM_ID: u32 = 0x6d64_6174; // 'mdat'
 
 #[derive(Debug, PartialEq)]
 pub struct MdatAtom {
-    pub atom_offset: u64,
-    pub atom_size: u64,
+    pub atom_head: atom::AtomHead,
 }
 
 pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MdatAtom, AtomParseError> {
@@ -23,8 +22,5 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MdatAtom, AtomParseError> {
 
     r.seek(SeekFrom::Start(atom_offset + atom_size))?;
 
-    Ok(MdatAtom {
-        atom_offset,
-        atom_size,
-    })
+    Ok(MdatAtom { atom_head })
 }

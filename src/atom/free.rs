@@ -6,8 +6,7 @@ pub const ATOM_ID: u32 = 0x6672_6565; // 'free'
 
 #[derive(Debug, PartialEq)]
 pub struct FreeAtom {
-    pub atom_offset: u64,
-    pub atom_size: u64,
+    pub atom_head: atom::AtomHead,
 }
 
 pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FreeAtom, AtomParseError> {
@@ -23,8 +22,5 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FreeAtom, AtomParseError> {
 
     r.seek(SeekFrom::Start(atom_offset + atom_size))?;
 
-    Ok(FreeAtom {
-        atom_offset,
-        atom_size,
-    })
+    Ok(FreeAtom { atom_head })
 }
