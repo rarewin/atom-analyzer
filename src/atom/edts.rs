@@ -1,16 +1,10 @@
 use std::io::{Read, Seek, SeekFrom};
 
-use crate::atom::{self, AtomParseError};
+use crate::atom::{self, Atom, AtomParseError};
 
 pub const ATOM_ID: u32 = 0x6564_7473; // 'edts'
 
-#[derive(Debug, PartialEq)]
-pub struct EdtsAtom {
-    pub atom_head: atom::AtomHead,
-    pub elst_atom: Option<atom::elst::ElstAtom>,
-}
-
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<EdtsAtom, AtomParseError> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomParseError> {
     let atom_head = atom::parse_atom_head(r)?;
 
     let atom_type = atom_head.atom_type;
@@ -29,7 +23,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<EdtsAtom, AtomParseError> {
 
     r.seek(SeekFrom::Start(atom_offset + atom_size))?;
 
-    Ok(EdtsAtom {
+    Ok(Atom::Edts {
         atom_head,
         elst_atom,
     })

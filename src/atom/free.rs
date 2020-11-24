@@ -1,15 +1,10 @@
 use std::io::{Read, Seek, SeekFrom};
 
-use crate::atom::{self, AtomParseError};
+use crate::atom::{self, Atom, AtomParseError};
 
 pub const ATOM_ID: u32 = 0x6672_6565; // 'free'
 
-#[derive(Debug, PartialEq)]
-pub struct FreeAtom {
-    pub atom_head: atom::AtomHead,
-}
-
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FreeAtom, AtomParseError> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomParseError> {
     let atom_head = atom::parse_atom_head(r)?;
 
     let atom_offset = atom_head.atom_offset;
@@ -22,5 +17,5 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FreeAtom, AtomParseError> {
 
     r.seek(SeekFrom::Start(atom_offset + atom_size))?;
 
-    Ok(FreeAtom { atom_head })
+    Ok(Atom::Free { atom_head })
 }

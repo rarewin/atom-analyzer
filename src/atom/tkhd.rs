@@ -6,32 +6,12 @@ use fixed::{
     FixedU16, FixedU32,
 };
 
-use crate::atom::{self, AtomParseError};
+use crate::atom::{self, Atom, AtomParseError};
 use crate::element;
-
-#[derive(Debug, PartialEq)]
-pub struct TkhdAtom {
-    pub atom_head: atom::AtomHead,
-    pub atom_version: u8,
-    pub atom_flags: [u8; 3],
-    pub creation_time: element::qtfile_datetime::QtFileDateTime,
-    pub modification_time: element::qtfile_datetime::QtFileDateTime,
-    pub track_id: u32,
-    pub reserved0: u32,
-    pub duration: u32,
-    pub reserved1: [u8; 8],
-    pub layer: u16,
-    pub alternate_group: u16,
-    pub volume: FixedU16<U8>,
-    pub reserved2: u16,
-    pub matrix_structure: element::qtfile_matrix::QtFileMatrix,
-    pub track_width: FixedU32<U16>,
-    pub track_height: FixedU32<U16>,
-}
 
 pub const ATOM_ID: u32 = 0x746b_6864; // 'tkhd'
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<TkhdAtom, AtomParseError> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomParseError> {
     let atom_head = atom::parse_atom_head(r)?;
 
     if atom_head.atom_type != ATOM_ID {
@@ -63,7 +43,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<TkhdAtom, AtomParseError> {
     let track_width = FixedU32::<U16>::from_bits(r.read_u32::<BigEndian>()?);
     let track_height = FixedU32::<U16>::from_bits(r.read_u32::<BigEndian>()?);
 
-    Ok(TkhdAtom {
+    Ok(Atom::Tkhd {
         atom_head,
         atom_version,
         atom_flags,

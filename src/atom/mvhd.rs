@@ -2,33 +2,15 @@ use std::io::{Read, Seek};
 
 use byteorder::{BigEndian, ReadBytesExt};
 
-use crate::atom::{self, AtomParseError};
+use crate::atom::{self, Atom, AtomParseError};
 use crate::element;
 
 pub const ATOM_ID: u32 = 0x6d76_6864; // 'mvhd'
 
 #[derive(Debug, PartialEq)]
-pub struct MvhdAtom {
-    pub atom_head: atom::AtomHead,
-    pub atom_version: u8,
-    pub atom_flags: [u8; 3],
-    pub creation_time: element::qtfile_datetime::QtFileDateTime,
-    pub modification_time: element::qtfile_datetime::QtFileDateTime,
-    pub time_scale: u32,
-    pub duration: u32,
-    pub preferred_rate: u32,
-    pub preferred_volume: u16,
-    pub matrix_structure: element::qtfile_matrix::QtFileMatrix,
-    pub preview_time: element::qtfile_datetime::QtFileDateTime,
-    pub preview_duration: u32,
-    pub poster_time: element::qtfile_datetime::QtFileDateTime,
-    pub selection_time: element::qtfile_datetime::QtFileDateTime,
-    pub selection_duration: u32,
-    pub current_time: element::qtfile_datetime::QtFileDateTime,
-    pub next_track_id: u32,
-}
+pub struct MvhdAtom {}
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MvhdAtom, AtomParseError> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomParseError> {
     let atom_head = atom::parse_atom_head(r)?;
 
     if atom_head.atom_type != ATOM_ID {
@@ -64,7 +46,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MvhdAtom, AtomParseError> {
 
     let next_track_id = r.read_u32::<BigEndian>()?;
 
-    Ok(MvhdAtom {
+    Ok(Atom::Mvhd {
         atom_head,
         atom_version,
         atom_flags,

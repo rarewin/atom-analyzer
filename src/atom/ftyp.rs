@@ -2,7 +2,7 @@ use std::io::{Read, Seek, SeekFrom};
 
 use byteorder::{BigEndian, ReadBytesExt};
 
-use crate::atom::{self, AtomParseError};
+use crate::atom::{self, Atom, AtomParseError};
 
 #[derive(Debug, PartialEq)]
 pub enum Brand {
@@ -25,14 +25,9 @@ fn match_brand(val: u32) -> Brand {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct FtypAtom {
-    pub atom_head: atom::AtomHead,
-    pub major_brand: Brand,
-    pub minor_version: u32,
-    pub compatible_brands: Vec<Brand>,
-}
+pub struct FtypAtom {}
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, AtomParseError> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomParseError> {
     let atom_head = atom::parse_atom_head(r)?;
 
     let atom_offset = atom_head.atom_offset;
@@ -60,7 +55,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, AtomParseError> {
         return Err(AtomParseError::UnexpectedError(atom_offset + 8));
     };
 
-    Ok(FtypAtom {
+    Ok(Atom::Ftyp {
         atom_head,
         major_brand,
         minor_version,
@@ -71,6 +66,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, AtomParseError> {
 #[cfg(test)]
 mod test_ftyp {
     use crate::atom::ftyp::{self, Brand};
+    use crate::atom::Atom;
 
     use std::io::Cursor;
 
@@ -86,7 +82,7 @@ mod test_ftyp {
 
         assert_eq!(
             atom.unwrap(),
-            ftyp::FtypAtom {
+            Atom::Ftyp {
                 atom_head: crate::atom::AtomHead {
                     atom_offset: 0,
                     atom_size: 20,
@@ -109,7 +105,7 @@ mod test_ftyp {
 
         assert_eq!(
             ftyp::parse(&mut buf).unwrap(),
-            ftyp::FtypAtom {
+            Atom::Ftyp {
                 atom_head: crate::atom::AtomHead {
                     atom_offset: 0,
                     atom_size: 0x1c,

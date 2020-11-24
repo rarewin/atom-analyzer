@@ -15,21 +15,83 @@ use std::fmt;
 use std::io::{Read, Seek, SeekFrom};
 
 use byteorder::{BigEndian, ByteOrder, ReadBytesExt};
+use fixed::{
+    types::extra::{U16, U8},
+    FixedU16, FixedU32,
+};
 use thiserror::Error;
 
-use crate::element::ElementParseError;
+use crate::element::{self, ElementParseError};
 
 #[derive(Debug, PartialEq)]
 pub enum Atom {
-    Ftyp(Box<ftyp::FtypAtom>),
-    Mdat(Box<mdat::MdatAtom>),
-    Wide(Box<wide::WideAtom>),
-    Free(Box<free::FreeAtom>),
-    Moov(Box<moov::MoovAtom>),
-    Mvhd(Box<mvhd::MvhdAtom>),
-    Trak(Box<trak::TrakAtom>),
-    Tkhd(Box<tkhd::TkhdAtom>),
-    Edts(Box<edts::EdtsAtom>),
+    Ftyp {
+        atom_head: AtomHead,
+        major_brand: ftyp::Brand,
+        minor_version: u32,
+        compatible_brands: Vec<ftyp::Brand>,
+    },
+    Mdat {
+        atom_head: AtomHead,
+    },
+    Wide {
+        atom_head: AtomHead,
+    },
+    Free {
+        atom_head: AtomHead,
+    },
+    Moov {
+        atom_head: AtomHead,
+        mvhd_atom: Option<Box<Atom>>,
+        trak_atom: Vec<Atom>,
+    },
+    Mvhd {
+        atom_head: AtomHead,
+        atom_version: u8,
+        atom_flags: [u8; 3],
+        creation_time: element::qtfile_datetime::QtFileDateTime,
+        modification_time: element::qtfile_datetime::QtFileDateTime,
+        time_scale: u32,
+        duration: u32,
+        preferred_rate: u32,
+        preferred_volume: u16,
+        matrix_structure: element::qtfile_matrix::QtFileMatrix,
+        preview_time: element::qtfile_datetime::QtFileDateTime,
+        preview_duration: u32,
+        poster_time: element::qtfile_datetime::QtFileDateTime,
+        selection_time: element::qtfile_datetime::QtFileDateTime,
+        selection_duration: u32,
+        current_time: element::qtfile_datetime::QtFileDateTime,
+        next_track_id: u32,
+    },
+    Trak {
+        atom_head: AtomHead,
+        tkhd_atom: Box<Atom>,
+        edts_atom: Option<Box<Atom>>,
+        mdia_atom: self::mdia::MdiaAtom,
+    },
+    Tkhd {
+        atom_head: AtomHead,
+        atom_version: u8,
+        atom_flags: [u8; 3],
+        creation_time: element::qtfile_datetime::QtFileDateTime,
+        modification_time: element::qtfile_datetime::QtFileDateTime,
+        track_id: u32,
+        reserved0: u32,
+        duration: u32,
+        reserved1: [u8; 8],
+        layer: u16,
+        alternate_group: u16,
+        volume: FixedU16<U8>,
+        reserved2: u16,
+        matrix_structure: element::qtfile_matrix::QtFileMatrix,
+        track_width: FixedU32<U16>,
+        track_height: FixedU32<U16>,
+    },
+    Edts {
+        atom_head: AtomHead,
+        elst_atom: Option<self::elst::ElstAtom>,
+    },
     Elst(Box<elst::ElstAtom>),
     Mdia(Box<mdia::MdiaAtom>),
     Mdhd(Box<mdhd::MdhdAtom>),
@@ -83,41 +145,21 @@ impl fmt::Debug for AtomHead {
     }
 }
 
-impl Atom {
-    pub fn get_offset(&self) {
-        match self {
-            Atom::Ftyp(f) => f.atom_head.atom_offset,
-            Atom::Mdat(m) => m.atom_head.atom_offset,
-            Atom::Wide(w) => w.atom_head.atom_offset,
-            Atom::Free(f) => f.atom_head.atom_offset,
-            Atom::Moov(m) => m.atom_head.atom_offset,
-            Atom::Mvhd(m) => m.atom_head.atom_offset,
-            Atom::Trak(t) => t.atom_head.atom_offset,
-            Atom::Tkhd(t) => t.atom_head.atom_offset,
-            Atom::Edts(e) => e.atom_head.atom_offset,
-            Atom::Elst(e) => e.atom_head.atom_offset,
-            Atom::Mdia(m) => m.atom_head.atom_offset,
-            Atom::Mdhd(m) => m.atom_head.atom_offset,
-            Atom::Unimplemented(_) => unimplemented!(),
-        };
-    }
-}
-
 pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomParseError> {
     let atom_head = parse_atom_head(r)?;
 
     r.seek(SeekFrom::Start(atom_head.atom_offset))?;
 
     match atom_head.atom_type {
-        ftyp::ATOM_ID => Ok(Atom::Ftyp(Box::new(ftyp::parse(r)?))),
-        wide::ATOM_ID => Ok(Atom::Wide(Box::new(wide::parse(r)?))),
-        mdat::ATOM_ID => Ok(Atom::Mdat(Box::new(mdat::parse(r)?))),
-        free::ATOM_ID => Ok(Atom::Free(Box::new(free::parse(r)?))),
-        moov::ATOM_ID => Ok(Atom::Moov(Box::new(moov::parse(r)?))),
-        mvhd::ATOM_ID => Ok(Atom::Mvhd(Box::new(mvhd::parse(r)?))),
-        trak::ATOM_ID => Ok(Atom::Trak(Box::new(trak::parse(r)?))),
-        tkhd::ATOM_ID => Ok(Atom::Tkhd(Box::new(tkhd::parse(r)?))),
-        edts::ATOM_ID => Ok(Atom::Edts(Box::new(edts::parse(r)?))),
+        ftyp::ATOM_ID => Ok(ftyp::parse(r)?),
+        wide::ATOM_ID => Ok(wide::parse(r)?),
+        mdat::ATOM_ID => Ok(mdat::parse(r)?),
+        free::ATOM_ID => Ok(free::parse(r)?),
+        moov::ATOM_ID => Ok(moov::parse(r)?),
+        mvhd::ATOM_ID => Ok(mvhd::parse(r)?),
+        trak::ATOM_ID => Ok(trak::parse(r)?),
+        tkhd::ATOM_ID => Ok(tkhd::parse(r)?),
+        edts::ATOM_ID => Ok(edts::parse(r)?),
         elst::ATOM_ID => Ok(Atom::Elst(Box::new(elst::parse(r)?))),
         mdia::ATOM_ID => Ok(Atom::Mdia(Box::new(mdia::parse(r)?))),
         mdhd::ATOM_ID => Ok(Atom::Mdhd(Box::new(mdhd::parse(r)?))),
