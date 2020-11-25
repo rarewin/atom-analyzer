@@ -1,18 +1,20 @@
+use std::fmt::Debug;
 use std::io::{Read, Seek, SeekFrom};
 
-use crate::atom::{self, AtomParseError};
+use crate::atom::{self, Atom, AtomHead, AtomParseError};
 
 pub const ATOM_ID: u32 = 0x6d6f_6f76; // 'moov'
 
 #[derive(Debug, PartialEq)]
 pub struct MoovAtom {
-    pub atom_head: atom::AtomHead,
-    pub mvhd_atom: Option<atom::mvhd::MvhdAtom>,
+    pub atom_head: AtomHead,
+    pub mvhd_atom: Option<Box<atom::mvhd::MvhdAtom>>,
     pub trak_atom: Vec<atom::trak::TrakAtom>,
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MoovAtom, AtomParseError> {
-    let atom_head = atom::parse_atom_head(r)?;
+impl Atom for MoovAtom {}
+
+pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MoovAtom, AtomParseError> {
     let mut mvhd_atom = None;
     let mut trak_atom = Vec::new();
 
@@ -21,10 +23,12 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<MoovAtom, AtomParseError> {
     }
 
     while let Ok(atom) = atom::parse(r) {
-        match atom {
-            atom::Atom::Mvhd(m) => mvhd_atom = Some(*m),
-            atom::Atom::Trak(t) => trak_atom.push(*t),
-            _ => eprintln!("{:?}", atom),
+        if atom.is::<atom::mvhd::MvhdAtom>() {
+            mvhd_atom = Some(atom.downcast::<atom::mvhd::MvhdAtom>().unwrap()); // @todo
+        } else if atom.is::<atom::trak::TrakAtom>() {
+            trak_atom.push(*atom.downcast::<atom::trak::TrakAtom>().unwrap());
+        } else {
+            eprintln!("{:?}", atom);
         }
     }
 

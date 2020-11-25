@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::io::{Read, Seek};
 
 use byteorder::{BigEndian, ReadBytesExt};
@@ -6,7 +7,7 @@ use fixed::{
     FixedU16, FixedU32,
 };
 
-use crate::atom::{self, AtomParseError};
+use crate::atom::{self, Atom, AtomHead, AtomParseError};
 use crate::element;
 
 #[derive(Debug, PartialEq)]
@@ -29,15 +30,11 @@ pub struct TkhdAtom {
     pub track_height: FixedU32<U16>,
 }
 
+impl Atom for TkhdAtom {}
+
 pub const ATOM_ID: u32 = 0x746b_6864; // 'tkhd'
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<TkhdAtom, AtomParseError> {
-    let atom_head = atom::parse_atom_head(r)?;
-
-    if atom_head.atom_type != ATOM_ID {
-        return Err(atom::AtomParseError::TypeError(atom_head.atom_offset));
-    }
-
+pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<TkhdAtom, AtomParseError> {
     let atom_version = r.read_u8()?;
     let mut atom_flags = [0_u8; 3];
     r.read_exact(&mut atom_flags)?;
