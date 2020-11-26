@@ -1,8 +1,9 @@
+use std::fmt::Debug;
 use std::io::{Read, Seek, SeekFrom};
 
 use byteorder::{BigEndian, ReadBytesExt};
 
-use crate::atom::{self, AtomParseError};
+use crate::atom::{self, Atom, AtomHead, AtomParseError};
 
 #[derive(Debug, PartialEq)]
 pub enum Brand {
@@ -32,16 +33,11 @@ pub struct FtypAtom {
     pub compatible_brands: Vec<Brand>,
 }
 
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, AtomParseError> {
-    let atom_head = atom::parse_atom_head(r)?;
+impl Atom for FtypAtom {}
 
+pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<FtypAtom, AtomParseError> {
     let atom_offset = atom_head.atom_offset;
     let atom_size = atom_head.atom_size;
-    let atom_type = atom_head.atom_type;
-
-    if atom_type != ATOM_ID {
-        return Err(AtomParseError::TypeError(atom_offset + 4));
-    }
 
     let major_brand = match_brand(r.read_u32::<BigEndian>()?);
     let minor_version = r.read_u32::<BigEndian>()?;
@@ -66,71 +62,4 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<FtypAtom, AtomParseError> {
         minor_version,
         compatible_brands,
     })
-}
-
-#[cfg(test)]
-mod test_ftyp {
-    use crate::atom::ftyp::{self, Brand};
-
-    use std::io::Cursor;
-
-    #[test]
-    fn test_simple_ftyp() {
-        let test: Vec<u8> = vec![
-            0x00, 0x00, 0x00, 0x14, 0x66, 0x74, 0x79, 0x70, 0x71, 0x74, 0x20, 0x20, 0x20, 0x04,
-            0x06, 0x00, 0x00, 0x00, 0x00, 0x00,
-        ];
-        let mut buf = Cursor::new(test);
-
-        let atom = ftyp::parse(&mut buf);
-
-        assert_eq!(
-            atom.unwrap(),
-            ftyp::FtypAtom {
-                atom_head: crate::atom::AtomHead {
-                    atom_offset: 0,
-                    atom_size: 20,
-                    atom_type: ftyp::ATOM_ID,
-                },
-                major_brand: ftyp::Brand::QuickTimeMovieFile,
-                minor_version: 0x20040600,
-                compatible_brands: vec![Brand::Other(0)]
-            }
-        );
-    }
-
-    #[test]
-    fn test_extended_size_ftyp() {
-        let test: Vec<u8> = vec![
-            0x00, 0x00, 0x00, 0x01, 0x66, 0x74, 0x79, 0x70, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x1c, 0x71, 0x74, 0x20, 0x20, 0x20, 0x04, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00,
-        ];
-        let mut buf = Cursor::new(test);
-
-        assert_eq!(
-            ftyp::parse(&mut buf).unwrap(),
-            ftyp::FtypAtom {
-                atom_head: crate::atom::AtomHead {
-                    atom_offset: 0,
-                    atom_size: 0x1c,
-                    atom_type: ftyp::ATOM_ID,
-                },
-                major_brand: ftyp::Brand::QuickTimeMovieFile,
-                minor_version: 0x20040600,
-                compatible_brands: vec![Brand::Other(0)]
-            }
-        );
-    }
-
-    #[test]
-    fn test_invalid_ftyp() {
-        let test: Vec<u8> = vec![
-            0x00, 0x00, 0x00, 0x10, 0x67, 0x74, 0x79, 0x70, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00,
-            0x00, 0x00,
-        ];
-
-        let mut buf = Cursor::new(test);
-
-        assert!(ftyp::parse(&mut buf).is_err());
-    }
 }

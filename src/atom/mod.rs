@@ -1,3 +1,4 @@
+#![allow(clippy::transmute_ptr_to_ref)] // for mopa
 pub mod edts;
 pub mod elst;
 pub mod free;
@@ -11,7 +12,7 @@ pub mod tkhd;
 pub mod trak;
 pub mod wide;
 
-use std::fmt;
+use std::fmt::{self, Debug};
 use std::io::{Read, Seek, SeekFrom};
 
 use byteorder::{BigEndian, ByteOrder, ReadBytesExt};
@@ -19,24 +20,11 @@ use thiserror::Error;
 
 use crate::element::ElementParseError;
 
-#[derive(Debug, PartialEq)]
-pub enum Atom {
-    Ftyp(Box<ftyp::FtypAtom>),
-    Mdat(Box<mdat::MdatAtom>),
-    Wide(Box<wide::WideAtom>),
-    Free(Box<free::FreeAtom>),
-    Moov(Box<moov::MoovAtom>),
-    Mvhd(Box<mvhd::MvhdAtom>),
-    Trak(Box<trak::TrakAtom>),
-    Tkhd(Box<tkhd::TkhdAtom>),
-    Edts(Box<edts::EdtsAtom>),
-    Elst(Box<elst::ElstAtom>),
-    Mdia(Box<mdia::MdiaAtom>),
-    Mdhd(Box<mdhd::MdhdAtom>),
-    Unimplemented(AtomHead),
-}
+pub trait Atom: mopa::Any + std::fmt::Debug {}
 
-#[derive(PartialEq)]
+mopafy!(Atom);
+
+#[derive(PartialEq, Clone)]
 pub struct AtomHead {
     pub atom_offset: u64,
     pub atom_size: u64,
@@ -47,7 +35,7 @@ pub struct AtomHead {
 pub enum AtomParseError {
     #[error("failed to seek at {0}")]
     SeekFailed(u64),
-    #[error("type error at {0}")]
+    #[error("atom type error at {0}")]
     TypeError(u64),
     #[error("required atom {0} was not found")]
     RequiredAtomNotFound(u32),
@@ -62,6 +50,13 @@ pub enum AtomParseError {
     #[error(transparent)]
     ElementParseError(#[from] ElementParseError),
 }
+
+#[derive(Debug)]
+pub struct UnimplementedAtom {
+    pub atom_head: AtomHead,
+}
+
+impl Atom for UnimplementedAtom {}
 
 impl fmt::Debug for AtomHead {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -83,49 +78,29 @@ impl fmt::Debug for AtomHead {
     }
 }
 
-impl Atom {
-    pub fn get_offset(&self) {
-        match self {
-            Atom::Ftyp(f) => f.atom_head.atom_offset,
-            Atom::Mdat(m) => m.atom_head.atom_offset,
-            Atom::Wide(w) => w.atom_head.atom_offset,
-            Atom::Free(f) => f.atom_head.atom_offset,
-            Atom::Moov(m) => m.atom_head.atom_offset,
-            Atom::Mvhd(m) => m.atom_head.atom_offset,
-            Atom::Trak(t) => t.atom_head.atom_offset,
-            Atom::Tkhd(t) => t.atom_head.atom_offset,
-            Atom::Edts(e) => e.atom_head.atom_offset,
-            Atom::Elst(e) => e.atom_head.atom_offset,
-            Atom::Mdia(m) => m.atom_head.atom_offset,
-            Atom::Mdhd(m) => m.atom_head.atom_offset,
-            Atom::Unimplemented(_) => unimplemented!(),
-        };
-    }
-}
-
-pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Atom, AtomParseError> {
+pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Box<dyn Atom>, AtomParseError> {
     let atom_head = parse_atom_head(r)?;
 
-    r.seek(SeekFrom::Start(atom_head.atom_offset))?;
-
-    match atom_head.atom_type {
-        ftyp::ATOM_ID => Ok(Atom::Ftyp(Box::new(ftyp::parse(r)?))),
-        wide::ATOM_ID => Ok(Atom::Wide(Box::new(wide::parse(r)?))),
-        mdat::ATOM_ID => Ok(Atom::Mdat(Box::new(mdat::parse(r)?))),
-        free::ATOM_ID => Ok(Atom::Free(Box::new(free::parse(r)?))),
-        moov::ATOM_ID => Ok(Atom::Moov(Box::new(moov::parse(r)?))),
-        mvhd::ATOM_ID => Ok(Atom::Mvhd(Box::new(mvhd::parse(r)?))),
-        trak::ATOM_ID => Ok(Atom::Trak(Box::new(trak::parse(r)?))),
-        tkhd::ATOM_ID => Ok(Atom::Tkhd(Box::new(tkhd::parse(r)?))),
-        edts::ATOM_ID => Ok(Atom::Edts(Box::new(edts::parse(r)?))),
-        elst::ATOM_ID => Ok(Atom::Elst(Box::new(elst::parse(r)?))),
-        mdia::ATOM_ID => Ok(Atom::Mdia(Box::new(mdia::parse(r)?))),
-        mdhd::ATOM_ID => Ok(Atom::Mdhd(Box::new(mdhd::parse(r)?))),
+    let atom: Box<dyn Atom> = match atom_head.atom_type {
+        ftyp::ATOM_ID => Box::new(ftyp::parse(r, atom_head)?),
+        wide::ATOM_ID => Box::new(wide::parse(r, atom_head)?),
+        mdat::ATOM_ID => Box::new(mdat::parse(r, atom_head)?),
+        free::ATOM_ID => Box::new(free::parse(r, atom_head)?),
+        moov::ATOM_ID => Box::new(moov::parse(r, atom_head)?),
+        mvhd::ATOM_ID => Box::new(mvhd::parse(r, atom_head)?),
+        trak::ATOM_ID => Box::new(trak::parse(r, atom_head)?),
+        tkhd::ATOM_ID => Box::new(tkhd::parse(r, atom_head)?),
+        edts::ATOM_ID => Box::new(edts::parse(r, atom_head)?),
+        elst::ATOM_ID => Box::new(elst::parse(r, atom_head)?),
+        mdia::ATOM_ID => Box::new(mdia::parse(r, atom_head)?),
+        mdhd::ATOM_ID => Box::new(mdhd::parse(r, atom_head)?),
         _ => {
             r.seek(SeekFrom::Start(atom_head.atom_offset + atom_head.atom_size))?;
-            Ok(Atom::Unimplemented(atom_head))
+            Box::new(UnimplementedAtom { atom_head })
         }
-    }
+    };
+
+    Ok(atom)
 }
 
 /// Returns an AtomHead from `r`

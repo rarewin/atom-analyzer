@@ -14,9 +14,12 @@ fn test_camouflage_vga_mov_manual() {
     let file_name = PathBuf::from("tests/samples/camouflage_vga.mov");
     let mut qt = qtfile::parse_file(file_name).unwrap();
 
+    let ftyp = qt.next().unwrap();
+
+    assert!(ftyp.is::<ftyp::FtypAtom>());
     assert_eq!(
-        qt.next(),
-        Some(atom::Atom::Ftyp(Box::new(ftyp::FtypAtom {
+        ftyp.downcast_ref::<ftyp::FtypAtom>(),
+        Some(&ftyp::FtypAtom {
             atom_head: atom::AtomHead {
                 atom_offset: 0,
                 atom_size: 20,
@@ -25,40 +28,50 @@ fn test_camouflage_vga_mov_manual() {
             major_brand: ftyp::Brand::QuickTimeMovieFile,
             minor_version: 0x00000200,
             compatible_brands: vec![ftyp::Brand::QuickTimeMovieFile]
-        })))
+        })
     );
 
+    let wide = qt.next().unwrap();
+
+    assert!(wide.is::<wide::WideAtom>());
     assert_eq!(
-        qt.next(),
-        Some(atom::Atom::Wide(Box::new(wide::WideAtom {
+        wide.downcast_ref::<wide::WideAtom>(),
+        Some(&wide::WideAtom {
             atom_head: atom::AtomHead {
                 atom_offset: 20,
                 atom_size: 8,
                 atom_type: atom::wide::ATOM_ID,
             },
-        }))),
+        }),
     );
 
+    let mdat = qt.next().unwrap();
+
+    assert!(mdat.is::<mdat::MdatAtom>());
     assert_eq!(
-        qt.next(),
-        Some(atom::Atom::Mdat(Box::new(mdat::MdatAtom {
+        mdat.downcast_ref::<mdat::MdatAtom>(),
+        Some(&mdat::MdatAtom {
             atom_head: atom::AtomHead {
                 atom_offset: 28,
                 atom_size: 0x6170,
                 atom_type: atom::mdat::ATOM_ID,
             },
-        }))),
+        }),
     );
 
+    let moov = qt.next().unwrap();
+
+    assert!(moov.is::<moov::MoovAtom>());
+
     assert_eq!(
-        qt.next(),
-        Some(atom::Atom::Moov(Box::new(moov::MoovAtom {
+        moov.downcast_ref::<moov::MoovAtom>(),
+        Some(&moov::MoovAtom {
             atom_head: atom::AtomHead {
                 atom_type: atom::moov::ATOM_ID,
                 atom_offset: 0x618c,
                 atom_size: 0x476,
             },
-            mvhd_atom: Some(atom::mvhd::MvhdAtom {
+            mvhd_atom: Some(Box::new(atom::mvhd::MvhdAtom {
                 atom_head: atom::AtomHead {
                     atom_type: atom::mvhd::ATOM_ID,
                     atom_offset: 0x6194,
@@ -82,14 +95,14 @@ fn test_camouflage_vga_mov_manual() {
                 selection_duration: 0,
                 current_time: qtfile_datetime::QtFileDateTime::new(0),
                 next_track_id: 2,
-            }),
+            })),
             trak_atom: vec![atom::trak::TrakAtom {
                 atom_head: atom::AtomHead {
                     atom_offset: 0x6200,
                     atom_size: 0x3e1,
                     atom_type: atom::trak::ATOM_ID,
                 },
-                tkhd_atom: atom::tkhd::TkhdAtom {
+                tkhd_atom: Box::new(atom::tkhd::TkhdAtom {
                     atom_head: atom::AtomHead {
                         atom_offset: 0x6208,
                         atom_size: 0x5c,
@@ -112,14 +125,14 @@ fn test_camouflage_vga_mov_manual() {
                     ]),
                     track_width: FixedU32::<U16>::from_num(640),
                     track_height: FixedU32::<U16>::from_num(400),
-                },
-                edts_atom: Some(atom::edts::EdtsAtom {
+                }),
+                edts_atom: Some(Box::new(atom::edts::EdtsAtom {
                     atom_head: atom::AtomHead {
                         atom_offset: 0x6264,
                         atom_size: 0x24,
                         atom_type: atom::edts::ATOM_ID,
                     },
-                    elst_atom: Some(atom::elst::ElstAtom {
+                    elst_atom: Some(Box::new(atom::elst::ElstAtom {
                         atom_head: atom::AtomHead {
                             atom_offset: 0x626c,
                             atom_size: 0x1c,
@@ -133,23 +146,23 @@ fn test_camouflage_vga_mov_manual() {
                             media_time: 1024,
                             media_rate: FixedU32::<U16>::from_num(1),
                         }],
-                    }),
-                },),
-                mdia_atom: atom::mdia::MdiaAtom {
+                    })),
+                })),
+                mdia_atom: Box::new(atom::mdia::MdiaAtom {
                     atom_head: atom::AtomHead {
                         atom_offset: 0x6288,
                         atom_size: 0x359,
                         atom_type: atom::mdia::ATOM_ID,
                     },
-                    mdhd_atom: atom::mdhd::MdhdAtom {
+                    mdhd_atom: Box::new(atom::mdhd::MdhdAtom {
                         atom_head: atom::AtomHead {
                             atom_offset: 0x6290,
                             atom_size: 0x20,
                             atom_type: atom::mdhd::ATOM_ID,
                         }
-                    }
-                }
+                    })
+                })
             }],
-        })),)
+        }),
     );
 }
