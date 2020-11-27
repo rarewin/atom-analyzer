@@ -9,18 +9,22 @@ pub const ATOM_ID: u32 = 0x6d_64_69_61; // 'mdia'
 pub struct MdiaAtom {
     pub atom_head: atom::AtomHead,
     pub mdhd_atom: Box<atom::mdhd::MdhdAtom>,
+    pub hdlr_atom: Option<Box<atom::hdlr::HdlrAtom>>,
 }
 
 impl Atom for MdiaAtom {}
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MdiaAtom, AtomParseError> {
     let mut mdhd_atom: Option<Box<atom::mdhd::MdhdAtom>> = None;
+    let mut hdlr_atom: Option<Box<atom::hdlr::HdlrAtom>> = None;
 
     let atom_tail = atom_head.atom_offset + atom_head.atom_size;
 
     while let Ok(atom) = atom::parse(r) {
         if atom.is::<atom::mdhd::MdhdAtom>() {
-            mdhd_atom = Some(atom.downcast::<atom::mdhd::MdhdAtom>().unwrap());
+            mdhd_atom = Some(atom.downcast::<atom::mdhd::MdhdAtom>().unwrap()); // @todo
+        } else if atom.is::<atom::hdlr::HdlrAtom>() {
+            hdlr_atom = Some(atom.downcast::<atom::hdlr::HdlrAtom>().unwrap()); // @todo
         } else {
             eprintln!("{:?}", atom);
         }
@@ -44,5 +48,6 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MdiaAtom,
     Ok(MdiaAtom {
         atom_head,
         mdhd_atom,
+        hdlr_atom,
     })
 }
