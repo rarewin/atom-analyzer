@@ -3,6 +3,7 @@ pub mod edts;
 pub mod elst;
 pub mod free;
 pub mod ftyp;
+pub mod hdlr;
 pub mod mdat;
 pub mod mdhd;
 pub mod mdia;
@@ -94,6 +95,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Box<dyn Atom>, AtomParseError>
         elst::ATOM_ID => Box::new(elst::parse(r, atom_head)?),
         mdia::ATOM_ID => Box::new(mdia::parse(r, atom_head)?),
         mdhd::ATOM_ID => Box::new(mdhd::parse(r, atom_head)?),
+        hdlr::ATOM_ID => Box::new(hdlr::parse(r, atom_head)?),
         _ => {
             r.seek(SeekFrom::Start(atom_head.atom_offset + atom_head.atom_size))?;
             Box::new(UnimplementedAtom { atom_head })

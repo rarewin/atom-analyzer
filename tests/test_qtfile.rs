@@ -160,7 +160,22 @@ fn test_camouflage_vga_mov_manual() {
                             atom_size: 0x20,
                             atom_type: atom::mdhd::ATOM_ID,
                         }
-                    })
+                    }),
+                    hdlr_atom: Some(Box::new(atom::hdlr::HdlrAtom {
+                        atom_head: atom::AtomHead {
+                            atom_offset: 0x62b0,
+                            atom_size: 0x2d,
+                            atom_type: atom::hdlr::ATOM_ID,
+                        },
+                        atom_version: 0,
+                        atom_flags: [0, 0, 0],
+                        component_type: atom::hdlr::ComponentType::Mhlr,
+                        component_sub_type: atom::hdlr::ComponentSubType::VideoMedia,
+                        component_manufacturer: 0,
+                        component_flags: 0,
+                        component_flags_mask: 0,
+                        component_name: "\u{c}VideoHandler".into()
+                    })),
                 })
             }],
         }),
