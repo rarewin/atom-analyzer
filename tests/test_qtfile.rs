@@ -176,6 +176,64 @@ fn test_camouflage_vga_mov_manual() {
                         component_flags_mask: 0,
                         component_name: "\u{c}VideoHandler".into()
                     })),
+                    minf_atom: Some(Box::new(atom::minf::MinfAtom {
+                        atom_head: atom::AtomHead {
+                            atom_offset: 0x62dd,
+                            atom_size: 0x304,
+                            atom_type: atom::minf::ATOM_ID,
+                        },
+                        media_info: atom::minf::MediaInfo::VideoMediaInfo {
+                            vmhd_atom: Box::new(atom::vmhd::VmhdAtom {
+                                atom_head: atom::AtomHead {
+                                    atom_offset: 0x62e5,
+                                    atom_size: 0x14,
+                                    atom_type: atom::vmhd::ATOM_ID,
+                                },
+                            }),
+                            hdlr_atom: Box::new(atom::hdlr::HdlrAtom {
+                                atom_head: atom::AtomHead {
+                                    atom_offset: 0x62f9,
+                                    atom_size: 0x2c,
+                                    atom_type: atom::hdlr::ATOM_ID,
+                                },
+                                atom_version: 0,
+                                atom_flags: [0, 0, 0],
+                                component_type: atom::hdlr::ComponentType::Dhlr,
+                                component_sub_type: atom::hdlr::ComponentSubType::Unknown(
+                                    0x7572_6c20
+                                ),
+                                component_manufacturer: 0,
+                                component_flags: 0,
+                                component_flags_mask: 0,
+                                component_name: "\u{b}DataHandler".into()
+                            }),
+                            dinf_atom: Some(Box::new(atom::dinf::DinfAtom {
+                                atom_head: atom::AtomHead {
+                                    atom_offset: 0x6325,
+                                    atom_size: 0x24,
+                                    atom_type: atom::dinf::ATOM_ID,
+                                },
+                                dref_atom: Box::new(atom::dref::DrefAtom {
+                                    atom_head: atom::AtomHead {
+                                        atom_offset: 0x632d,
+                                        atom_size: 0x1c,
+                                        atom_type: atom::dref::ATOM_ID,
+                                    },
+                                    atom_version: 0,
+                                    atom_flags: [0, 0, 0],
+                                    number_of_entries: 1,
+                                    data_references: vec![atom::dref::DataReferenceType::Url {
+                                        atom_head: atom::AtomHead {
+                                            atom_offset: 0x633d,
+                                            atom_size: 0x0c,
+                                            atom_type: 0x7572_6c20, // @todo
+                                        },
+                                        url: "\u{0}\u{0}\u{0}\u{1}".into()
+                                    }],
+                                }),
+                            }),),
+                        }
+                    })),
                 })
             }],
         }),

@@ -1,4 +1,6 @@
 #![allow(clippy::transmute_ptr_to_ref)] // for mopa
+pub mod dinf;
+pub mod dref;
 pub mod edts;
 pub mod elst;
 pub mod free;
@@ -7,10 +9,13 @@ pub mod hdlr;
 pub mod mdat;
 pub mod mdhd;
 pub mod mdia;
+pub mod minf;
 pub mod moov;
 pub mod mvhd;
+pub mod smhd;
 pub mod tkhd;
 pub mod trak;
+pub mod vmhd;
 pub mod wide;
 
 use std::fmt::{self, Debug};
@@ -96,6 +101,11 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Box<dyn Atom>, AtomParseError>
         mdia::ATOM_ID => Box::new(mdia::parse(r, atom_head)?),
         mdhd::ATOM_ID => Box::new(mdhd::parse(r, atom_head)?),
         hdlr::ATOM_ID => Box::new(hdlr::parse(r, atom_head)?),
+        minf::ATOM_ID => Box::new(minf::parse(r, atom_head)?),
+        vmhd::ATOM_ID => Box::new(vmhd::parse(r, atom_head)?),
+        dinf::ATOM_ID => Box::new(dinf::parse(r, atom_head)?),
+        dref::ATOM_ID => Box::new(dref::parse(r, atom_head)?),
+        smhd::ATOM_ID => Box::new(smhd::parse(r, atom_head)?),
         _ => {
             r.seek(SeekFrom::Start(atom_head.atom_offset + atom_head.atom_size))?;
             Box::new(UnimplementedAtom { atom_head })

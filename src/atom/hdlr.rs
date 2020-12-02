@@ -38,7 +38,7 @@ impl ComponentType {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum ComponentSubType {
     VideoMedia,
     SoundMedia,
