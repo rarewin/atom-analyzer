@@ -20,6 +20,7 @@ pub enum MediaInfo {
         vmhd_atom: Box<atom::vmhd::VmhdAtom>,
         hdlr_atom: Box<atom::hdlr::HdlrAtom>,
         dinf_atom: Option<Box<atom::dinf::DinfAtom>>,
+        stbl_atom: Option<Box<atom::stbl::StblAtom>>,
     },
     SoundMediaInfo {
         smhd_atom: Box<atom::smhd::SmhdAtom>,
@@ -41,11 +42,15 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MinfAtom,
             };
 
             let mut dinf_atom: Option<Box<atom::dinf::DinfAtom>> = None;
+            let mut stbl_atom: Option<Box<atom::stbl::StblAtom>> = None;
 
             while let Ok(atom) = atom::parse(r) {
                 if atom.is::<atom::dinf::DinfAtom>() {
+                    // @todo
                     dinf_atom = Some(atom.downcast::<atom::dinf::DinfAtom>().unwrap());
-                // @todo
+                } else if atom.is::<atom::stbl::StblAtom>() {
+                    // @todo
+                    stbl_atom = Some(atom.downcast::<atom::stbl::StblAtom>().unwrap());
                 } else {
                     dbg!(&atom);
                 }
@@ -55,6 +60,7 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MinfAtom,
                 vmhd_atom,
                 hdlr_atom,
                 dinf_atom,
+                stbl_atom,
             }
         } else if atom.is::<atom::smhd::SmhdAtom>() {
             let smhd_atom = atom.downcast::<atom::smhd::SmhdAtom>().unwrap(); // @todo
