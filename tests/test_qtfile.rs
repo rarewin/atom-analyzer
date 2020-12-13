@@ -63,121 +63,281 @@ fn test_camouflage_vga_mov_manual() {
 
     assert!(moov.is::<moov::MoovAtom>());
 
+    let moov = moov.downcast_ref::<moov::MoovAtom>().unwrap();
+
     assert_eq!(
-        moov.downcast_ref::<moov::MoovAtom>(),
-        Some(&moov::MoovAtom {
+        moov.atom_head,
+        atom::AtomHead {
+            atom_type: atom::moov::ATOM_ID,
+            atom_offset: 0x618c,
+            atom_size: 0x476,
+        }
+    );
+
+    assert_eq!(
+        moov.mvhd_atom,
+        Some(Box::new(atom::mvhd::MvhdAtom {
             atom_head: atom::AtomHead {
-                atom_type: atom::moov::ATOM_ID,
-                atom_offset: 0x618c,
-                atom_size: 0x476,
+                atom_type: atom::mvhd::ATOM_ID,
+                atom_offset: 0x6194,
+                atom_size: 0x6c,
             },
-            mvhd_atom: Some(Box::new(atom::mvhd::MvhdAtom {
+            atom_version: 0,
+            atom_flags: [0, 0, 0],
+            creation_time: qtfile_datetime::QtFileDateTime::new(0),
+            modification_time: qtfile_datetime::QtFileDateTime::new(0),
+            time_scale: 1000,
+            duration: 1000,
+            preferred_rate: 0x10000,
+            preferred_volume: 0x100,
+            matrix_structure: qtfile_matrix::QtFileMatrix::new(&[
+                0x10000, 0, 0, 0, 0x10000, 0, 0, 0, 0x40000000
+            ]),
+            preview_time: qtfile_datetime::QtFileDateTime::new(0),
+            preview_duration: 0,
+            poster_time: qtfile_datetime::QtFileDateTime::new(0),
+            selection_time: qtfile_datetime::QtFileDateTime::new(0),
+            selection_duration: 0,
+            current_time: qtfile_datetime::QtFileDateTime::new(0),
+            next_track_id: 2,
+        })),
+    );
+
+    assert_eq!(moov.trak_atom.len(), 1);
+
+    let trak_atom = &moov.trak_atom[0];
+
+    assert_eq!(
+        trak_atom.atom_head,
+        atom::AtomHead {
+            atom_offset: 0x6200,
+            atom_size: 0x3e1,
+            atom_type: atom::trak::ATOM_ID,
+        },
+    );
+
+    let tkhd_atom = &trak_atom.tkhd_atom;
+
+    assert_eq!(
+        tkhd_atom,
+        &Box::new(atom::tkhd::TkhdAtom {
+            atom_head: atom::AtomHead {
+                atom_offset: 0x6208,
+                atom_size: 0x5c,
+                atom_type: atom::tkhd::ATOM_ID,
+            },
+            atom_version: 0,
+            atom_flags: [0, 0, 3],
+            creation_time: qtfile_datetime::QtFileDateTime::new(0),
+            modification_time: qtfile_datetime::QtFileDateTime::new(0),
+            track_id: 1,
+            reserved0: 0,
+            duration: 1000,
+            reserved1: [0, 0, 0, 0, 0, 0, 0, 0],
+            layer: 0,
+            alternate_group: 0,
+            volume: FixedU16::<U8>::from_num(0),
+            reserved2: 0,
+            matrix_structure: qtfile_matrix::QtFileMatrix::new(&[
+                0x10000, 0, 0, 0, 0x10000, 0, 0, 0, 0x40000000
+            ]),
+            track_width: FixedU32::<U16>::from_num(640),
+            track_height: FixedU32::<U16>::from_num(400),
+        }),
+    );
+
+    let edts_atom = &trak_atom.edts_atom;
+
+    assert_eq!(
+        edts_atom,
+        &Some(Box::new(atom::edts::EdtsAtom {
+            atom_head: atom::AtomHead {
+                atom_offset: 0x6264,
+                atom_size: 0x24,
+                atom_type: atom::edts::ATOM_ID,
+            },
+            elst_atom: Some(Box::new(atom::elst::ElstAtom {
                 atom_head: atom::AtomHead {
-                    atom_type: atom::mvhd::ATOM_ID,
-                    atom_offset: 0x6194,
-                    atom_size: 0x6c,
+                    atom_offset: 0x626c,
+                    atom_size: 0x1c,
+                    atom_type: atom::elst::ATOM_ID,
                 },
                 atom_version: 0,
                 atom_flags: [0, 0, 0],
-                creation_time: qtfile_datetime::QtFileDateTime::new(0),
-                modification_time: qtfile_datetime::QtFileDateTime::new(0),
-                time_scale: 1000,
-                duration: 1000,
-                preferred_rate: 0x10000,
-                preferred_volume: 0x100,
-                matrix_structure: qtfile_matrix::QtFileMatrix::new(&[
-                    0x10000, 0, 0, 0, 0x10000, 0, 0, 0, 0x40000000
-                ]),
-                preview_time: qtfile_datetime::QtFileDateTime::new(0),
-                preview_duration: 0,
-                poster_time: qtfile_datetime::QtFileDateTime::new(0),
-                selection_time: qtfile_datetime::QtFileDateTime::new(0),
-                selection_duration: 0,
-                current_time: qtfile_datetime::QtFileDateTime::new(0),
-                next_track_id: 2,
+                number_of_entries: 1,
+                edit_list_table: vec![atom::elst::EditListTableEntry {
+                    track_duration: 1000,
+                    media_time: 1024,
+                    media_rate: FixedU32::<U16>::from_num(1),
+                }],
             })),
-            trak_atom: vec![atom::trak::TrakAtom {
-                atom_head: atom::AtomHead {
-                    atom_offset: 0x6200,
-                    atom_size: 0x3e1,
-                    atom_type: atom::trak::ATOM_ID,
-                },
-                tkhd_atom: Box::new(atom::tkhd::TkhdAtom {
-                    atom_head: atom::AtomHead {
-                        atom_offset: 0x6208,
-                        atom_size: 0x5c,
-                        atom_type: atom::tkhd::ATOM_ID,
-                    },
-                    atom_version: 0,
-                    atom_flags: [0, 0, 3],
-                    creation_time: qtfile_datetime::QtFileDateTime::new(0),
-                    modification_time: qtfile_datetime::QtFileDateTime::new(0),
-                    track_id: 1,
-                    reserved0: 0,
-                    duration: 1000,
-                    reserved1: [0, 0, 0, 0, 0, 0, 0, 0],
-                    layer: 0,
-                    alternate_group: 0,
-                    volume: FixedU16::<U8>::from_num(0),
-                    reserved2: 0,
-                    matrix_structure: qtfile_matrix::QtFileMatrix::new(&[
-                        0x10000, 0, 0, 0, 0x10000, 0, 0, 0, 0x40000000
-                    ]),
-                    track_width: FixedU32::<U16>::from_num(640),
-                    track_height: FixedU32::<U16>::from_num(400),
-                }),
-                edts_atom: Some(Box::new(atom::edts::EdtsAtom {
-                    atom_head: atom::AtomHead {
-                        atom_offset: 0x6264,
-                        atom_size: 0x24,
-                        atom_type: atom::edts::ATOM_ID,
-                    },
-                    elst_atom: Some(Box::new(atom::elst::ElstAtom {
-                        atom_head: atom::AtomHead {
-                            atom_offset: 0x626c,
-                            atom_size: 0x1c,
-                            atom_type: atom::elst::ATOM_ID,
-                        },
-                        atom_version: 0,
-                        atom_flags: [0, 0, 0],
-                        number_of_entries: 1,
-                        edit_list_table: vec![atom::elst::EditListTableEntry {
-                            track_duration: 1000,
-                            media_time: 1024,
-                            media_rate: FixedU32::<U16>::from_num(1),
-                        }],
-                    })),
-                })),
-                mdia_atom: Box::new(atom::mdia::MdiaAtom {
-                    atom_head: atom::AtomHead {
-                        atom_offset: 0x6288,
-                        atom_size: 0x359,
-                        atom_type: atom::mdia::ATOM_ID,
-                    },
-                    mdhd_atom: Box::new(atom::mdhd::MdhdAtom {
-                        atom_head: atom::AtomHead {
-                            atom_offset: 0x6290,
-                            atom_size: 0x20,
-                            atom_type: atom::mdhd::ATOM_ID,
-                        }
-                    }),
-                    hdlr_atom: Some(Box::new(atom::hdlr::HdlrAtom {
-                        atom_head: atom::AtomHead {
-                            atom_offset: 0x62b0,
-                            atom_size: 0x2d,
-                            atom_type: atom::hdlr::ATOM_ID,
-                        },
-                        atom_version: 0,
-                        atom_flags: [0, 0, 0],
-                        component_type: atom::hdlr::ComponentType::Mhlr,
-                        component_sub_type: atom::hdlr::ComponentSubType::VideoMedia,
-                        component_manufacturer: 0,
-                        component_flags: 0,
-                        component_flags_mask: 0,
-                        component_name: "\u{c}VideoHandler".into()
-                    })),
-                })
-            }],
+        })),
+    );
+
+    let mdia_atom = &trak_atom.mdia_atom;
+
+    assert_eq!(
+        mdia_atom.atom_head,
+        atom::AtomHead {
+            atom_offset: 0x6288,
+            atom_size: 0x359,
+            atom_type: atom::mdia::ATOM_ID,
+        },
+    );
+
+    let mdhd_atom = &mdia_atom.mdhd_atom;
+
+    assert_eq!(
+        mdhd_atom,
+        &Box::new(atom::mdhd::MdhdAtom {
+            atom_head: atom::AtomHead {
+                atom_offset: 0x6290,
+                atom_size: 0x20,
+                atom_type: atom::mdhd::ATOM_ID,
+            }
         }),
+    );
+
+    let hdlr_atom = &mdia_atom.hdlr_atom;
+
+    assert_eq!(
+        hdlr_atom,
+        &Some(Box::new(atom::hdlr::HdlrAtom {
+            atom_head: atom::AtomHead {
+                atom_offset: 0x62b0,
+                atom_size: 0x2d,
+                atom_type: atom::hdlr::ATOM_ID,
+            },
+            atom_version: 0,
+            atom_flags: [0, 0, 0],
+            component_type: atom::hdlr::ComponentType::Mhlr,
+            component_sub_type: atom::hdlr::ComponentSubType::VideoMedia,
+            component_manufacturer: 0,
+            component_flags: 0,
+            component_flags_mask: 0,
+            component_name: "\u{c}VideoHandler".into()
+        })),
+    );
+
+    let minf_atom = &mdia_atom.minf_atom.as_ref().unwrap();
+
+    assert_eq!(
+        minf_atom.atom_head,
+        atom::AtomHead {
+            atom_offset: 0x62dd,
+            atom_size: 0x304,
+            atom_type: atom::minf::ATOM_ID,
+        },
+    );
+
+    let (vmhd_atom, hdlr_atom, dinf_atom, stbl_atom) = match &minf_atom.media_info {
+        atom::minf::MediaInfo::VideoMediaInfo {
+            vmhd_atom,
+            hdlr_atom,
+            dinf_atom,
+            stbl_atom,
+        } => (vmhd_atom, hdlr_atom, dinf_atom, stbl_atom),
+        _ => panic!(),
+    };
+
+    assert_eq!(
+        vmhd_atom,
+        &Box::new(atom::vmhd::VmhdAtom {
+            atom_head: atom::AtomHead {
+                atom_offset: 0x62e5,
+                atom_size: 0x14,
+                atom_type: atom::vmhd::ATOM_ID,
+            },
+        }),
+    );
+
+    assert_eq!(
+        hdlr_atom,
+        &Box::new(atom::hdlr::HdlrAtom {
+            atom_head: atom::AtomHead {
+                atom_offset: 0x62f9,
+                atom_size: 0x2c,
+                atom_type: atom::hdlr::ATOM_ID,
+            },
+            atom_version: 0,
+            atom_flags: [0, 0, 0],
+            component_type: atom::hdlr::ComponentType::Dhlr,
+            component_sub_type: atom::hdlr::ComponentSubType::Unknown(0x7572_6c20),
+            component_manufacturer: 0,
+            component_flags: 0,
+            component_flags_mask: 0,
+            component_name: "\u{b}DataHandler".into()
+        }),
+    );
+
+    assert_eq!(
+        dinf_atom,
+        &Some(Box::new(atom::dinf::DinfAtom {
+            atom_head: atom::AtomHead {
+                atom_offset: 0x6325,
+                atom_size: 0x24,
+                atom_type: atom::dinf::ATOM_ID,
+            },
+            dref_atom: Box::new(atom::dref::DrefAtom {
+                atom_head: atom::AtomHead {
+                    atom_offset: 0x632d,
+                    atom_size: 0x1c,
+                    atom_type: atom::dref::ATOM_ID,
+                },
+                atom_version: 0,
+                atom_flags: [0, 0, 0],
+                number_of_entries: 1,
+                data_references: vec![atom::dref::DataReferenceType::Url {
+                    atom_head: atom::AtomHead {
+                        atom_offset: 0x633d,
+                        atom_size: 0x0c,
+                        atom_type: 0x7572_6c20, // @todo
+                    },
+                    url: "\u{0}\u{0}\u{0}\u{1}".into()
+                }],
+            }),
+        }),),
+    );
+
+    assert_eq!(
+        stbl_atom,
+        &Some(Box::new(atom::stbl::StblAtom {
+            atom_head: atom::AtomHead {
+                atom_offset: 0x6349,
+                atom_size: 0x298,
+                atom_type: atom::stbl::ATOM_ID,
+            },
+            stsd_atom: Box::new(atom::stsd::StsdAtom {
+                atom_head: atom::AtomHead {
+                    atom_offset: 0x6351,
+                    atom_size: 0xa8,
+                    atom_type: atom::stsd::ATOM_ID,
+                },
+                atom_version: 0,
+                atom_flags: [0, 0, 0],
+                number_of_entries: 1,
+                sample_description_table: vec![atom::stsd::SampleDescription {
+                    sample_description_size: 0x98,
+                    data_format: 0x6176_6331,
+                    reserved: [0, 0, 0, 0, 0, 0],
+                    data_reference_index: 1,
+                    data: vec![]
+                }]
+            }),
+            stts_atom: Box::new(atom::stts::SttsAtom {
+                atom_head: atom::AtomHead {
+                    atom_offset: 0x63f9,
+                    atom_size: 0x18,
+                    atom_type: atom::stts::ATOM_ID,
+                },
+                atom_version: 0,
+                atom_flags: [0, 0, 0],
+                number_of_entries: 1,
+                time_to_sample_table: vec![atom::stts::TimeToSampleEntry {
+                    sample_count: 0x1e,
+                    sample_duration: 0x200,
+                }],
+            })
+        })),
     );
 }

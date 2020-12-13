@@ -10,6 +10,7 @@ pub struct MdiaAtom {
     pub atom_head: atom::AtomHead,
     pub mdhd_atom: Box<atom::mdhd::MdhdAtom>,
     pub hdlr_atom: Option<Box<atom::hdlr::HdlrAtom>>,
+    pub minf_atom: Option<Box<atom::minf::MinfAtom>>,
 }
 
 impl Atom for MdiaAtom {}
@@ -17,6 +18,7 @@ impl Atom for MdiaAtom {}
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MdiaAtom, AtomParseError> {
     let mut mdhd_atom: Option<Box<atom::mdhd::MdhdAtom>> = None;
     let mut hdlr_atom: Option<Box<atom::hdlr::HdlrAtom>> = None;
+    let mut minf_atom: Option<Box<atom::minf::MinfAtom>> = None;
 
     let atom_tail = atom_head.atom_offset + atom_head.atom_size;
 
@@ -25,6 +27,8 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MdiaAtom,
             mdhd_atom = Some(atom.downcast::<atom::mdhd::MdhdAtom>().unwrap()); // @todo
         } else if atom.is::<atom::hdlr::HdlrAtom>() {
             hdlr_atom = Some(atom.downcast::<atom::hdlr::HdlrAtom>().unwrap()); // @todo
+        } else if atom.is::<atom::minf::MinfAtom>() {
+            minf_atom = Some(atom.downcast::<atom::minf::MinfAtom>().unwrap()); // @todo
         } else {
             eprintln!("{:?}", atom);
         }
@@ -49,5 +53,6 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MdiaAtom,
         atom_head,
         mdhd_atom,
         hdlr_atom,
+        minf_atom,
     })
 }
