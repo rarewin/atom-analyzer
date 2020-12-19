@@ -15,6 +15,7 @@ pub mod mvhd;
 pub mod smhd;
 pub mod stbl;
 pub mod stsd;
+pub mod stss;
 pub mod stts;
 pub mod tkhd;
 pub mod trak;
@@ -112,6 +113,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Box<dyn Atom>, AtomParseError>
         stbl::ATOM_ID => Box::new(stbl::parse(r, atom_head)?),
         stsd::ATOM_ID => Box::new(stsd::parse(r, atom_head)?),
         stts::ATOM_ID => Box::new(stts::parse(r, atom_head)?),
+        stss::ATOM_ID => Box::new(stss::parse(r, atom_head)?),
         _ => {
             r.seek(SeekFrom::Start(atom_head.atom_offset + atom_head.atom_size))?;
             Box::new(UnimplementedAtom { atom_head })

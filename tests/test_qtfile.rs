@@ -337,7 +337,18 @@ fn test_camouflage_vga_mov_manual() {
                     sample_count: 0x1e,
                     sample_duration: 0x200,
                 }],
-            })
+            }),
+            stss_atom: Box::new(atom::stss::StssAtom {
+                atom_head: atom::AtomHead {
+                    atom_offset: 0x6411,
+                    atom_size: 0x14,
+                    atom_type: atom::stss::ATOM_ID,
+                },
+                atom_version: 0,
+                atom_flags: [0, 0, 0],
+                number_of_entries: 1,
+                sync_sample_table: vec![1,]
+            }),
         })),
     );
 }
