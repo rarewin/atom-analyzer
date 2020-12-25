@@ -8,12 +8,12 @@ pub const ATOM_ID: u32 = 0x7374_626c; // 'stbl'
 #[derive(Debug, PartialEq)]
 pub struct StblAtom {
     pub atom_head: AtomHead,
-    pub stsd_atom: Box<atom::stsd::StsdAtom>,
-    pub stts_atom: Box<atom::stts::SttsAtom>,
-    pub stss_atom: Box<atom::stss::StssAtom>,
-    pub ctts_atom: Box<atom::ctts::CttsAtom>,
-    pub stsc_atom: Box<atom::stsc::StscAtom>,
-    pub stsz_atom: Box<atom::stsz::StszAtom>,
+    pub stsd_atom: Option<Box<atom::stsd::StsdAtom>>,
+    pub stts_atom: Option<Box<atom::stts::SttsAtom>>,
+    pub stss_atom: Option<Box<atom::stss::StssAtom>>,
+    pub ctts_atom: Option<Box<atom::ctts::CttsAtom>>,
+    pub stsc_atom: Option<Box<atom::stsc::StscAtom>>,
+    pub stsz_atom: Option<Box<atom::stsz::StszAtom>>,
 }
 
 impl Atom for StblAtom {}
@@ -21,7 +21,7 @@ impl Atom for StblAtom {}
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<StblAtom, AtomParseError> {
     let stsd_atom = if let Ok(atom) = atom::parse(r) {
         if atom.is::<atom::stsd::StsdAtom>() {
-            atom.downcast::<atom::stsd::StsdAtom>().unwrap() // @todo
+            Some(atom.downcast::<atom::stsd::StsdAtom>().unwrap()) // @todo
         } else {
             unimplemented!();
         }
@@ -31,7 +31,7 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<StblAtom,
 
     let stts_atom = if let Ok(atom) = atom::parse(r) {
         if atom.is::<atom::stts::SttsAtom>() {
-            atom.downcast::<atom::stts::SttsAtom>().unwrap() // @todo
+            Some(atom.downcast::<atom::stts::SttsAtom>().unwrap()) // @todo
         } else {
             unimplemented!();
         }
@@ -41,7 +41,7 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<StblAtom,
 
     let stss_atom = if let Ok(atom) = atom::parse(r) {
         if atom.is::<atom::stss::StssAtom>() {
-            atom.downcast::<atom::stss::StssAtom>().unwrap() // @todo
+            Some(atom.downcast::<atom::stss::StssAtom>().unwrap()) // @todo
         } else {
             unimplemented!();
         }
@@ -51,7 +51,7 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<StblAtom,
 
     let ctts_atom = if let Ok(atom) = atom::parse(r) {
         if atom.is::<atom::ctts::CttsAtom>() {
-            atom.downcast::<atom::ctts::CttsAtom>().unwrap() // @todo
+            Some(atom.downcast::<atom::ctts::CttsAtom>().unwrap()) // @todo
         } else {
             unimplemented!();
         }
@@ -61,7 +61,7 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<StblAtom,
 
     let stsc_atom = if let Ok(atom) = atom::parse(r) {
         if atom.is::<atom::stsc::StscAtom>() {
-            atom.downcast::<atom::stsc::StscAtom>().unwrap() // @todo
+            Some(atom.downcast::<atom::stsc::StscAtom>().unwrap()) // @todo
         } else {
             unimplemented!();
         }
@@ -71,7 +71,7 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<StblAtom,
 
     let stsz_atom = if let Ok(atom) = atom::parse(r) {
         if atom.is::<atom::stsz::StszAtom>() {
-            atom.downcast::<atom::stsz::StszAtom>().unwrap() // @todo
+            Some(atom.downcast::<atom::stsz::StszAtom>().unwrap()) // @todo
         } else {
             unimplemented!();
         }

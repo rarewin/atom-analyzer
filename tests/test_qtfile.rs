@@ -310,7 +310,7 @@ fn test_camouflage_vga_mov_manual() {
                 atom_size: 0x298,
                 atom_type: atom::stbl::ATOM_ID,
             },
-            stsd_atom: Box::new(atom::stsd::StsdAtom {
+            stsd_atom: Some(Box::new(atom::stsd::StsdAtom {
                 atom_head: atom::AtomHead {
                     atom_offset: 0x6351,
                     atom_size: 0xa8,
@@ -326,8 +326,8 @@ fn test_camouflage_vga_mov_manual() {
                     data_reference_index: 1,
                     data: vec![]
                 }]
-            }),
-            stts_atom: Box::new(atom::stts::SttsAtom {
+            })),
+            stts_atom: Some(Box::new(atom::stts::SttsAtom {
                 atom_head: atom::AtomHead {
                     atom_offset: 0x63f9,
                     atom_size: 0x18,
@@ -340,8 +340,8 @@ fn test_camouflage_vga_mov_manual() {
                     sample_count: 0x1e,
                     sample_duration: 0x200,
                 }],
-            }),
-            stss_atom: Box::new(atom::stss::StssAtom {
+            })),
+            stss_atom: Some(Box::new(atom::stss::StssAtom {
                 atom_head: atom::AtomHead {
                     atom_offset: 0x6411,
                     atom_size: 0x14,
@@ -351,8 +351,8 @@ fn test_camouflage_vga_mov_manual() {
                 atom_flags: [0, 0, 0],
                 number_of_entries: 1,
                 sync_sample_table: vec![1,]
-            }),
-            ctts_atom: Box::new(atom::ctts::CttsAtom {
+            })),
+            ctts_atom: Some(Box::new(atom::ctts::CttsAtom {
                 atom_head: atom::AtomHead {
                     atom_offset: 0x6425,
                     atom_size: 0x100,
@@ -393,8 +393,8 @@ fn test_camouflage_vga_mov_manual() {
                     CompositionOffsetTableEntry::new(1, 0x200),
                     CompositionOffsetTableEntry::new(1, 0x400),
                 ]
-            }),
-            stsc_atom: Box::new(atom::stsc::StscAtom {
+            })),
+            stsc_atom: Some(Box::new(atom::stsc::StscAtom {
                 atom_head: atom::AtomHead {
                     atom_offset: 0x6525,
                     atom_size: 0x1c,
@@ -404,8 +404,8 @@ fn test_camouflage_vga_mov_manual() {
                 atom_flags: [0, 0, 0],
                 number_of_entries: 1,
                 sample_to_chunk_table: vec![SampleToChunk::new(1, 30, 1),]
-            }),
-            stsz_atom: Box::new(atom::stsz::StszAtom {
+            })),
+            stsz_atom: Some(Box::new(atom::stsz::StszAtom {
                 atom_head: atom::AtomHead {
                     atom_offset: 0x6541,
                     atom_size: 0x8c,
@@ -420,7 +420,7 @@ fn test_camouflage_vga_mov_manual() {
                     0x001a, 0x0012, 0x0012, 0x0039, 0x001b, 0x0012, 0x0012, 0x0034, 0x0019, 0x0012,
                     0x0013, 0x0018, 0x0019, 0x0012, 0x0012, 0x0018, 0x0018, 0x0012, 0x0012, 0x0019,
                 ],
-            }),
+            })),
         })),
     );
 }
