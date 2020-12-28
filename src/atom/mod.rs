@@ -15,6 +15,7 @@ pub mod moov;
 pub mod mvhd;
 pub mod smhd;
 pub mod stbl;
+pub mod stco;
 pub mod stsc;
 pub mod stsd;
 pub mod stss;
@@ -120,6 +121,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Box<dyn Atom>, AtomParseError>
         ctts::ATOM_ID => Box::new(ctts::parse(r, atom_head)?),
         stsc::ATOM_ID => Box::new(stsc::parse(r, atom_head)?),
         stsz::ATOM_ID => Box::new(stsz::parse(r, atom_head)?),
+        stco::ATOM_ID => Box::new(stco::parse(r, atom_head)?),
         _ => {
             r.seek(SeekFrom::Start(atom_head.atom_offset + atom_head.atom_size))?;
             Box::new(UnimplementedAtom { atom_head })

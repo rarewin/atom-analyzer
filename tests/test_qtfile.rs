@@ -421,6 +421,17 @@ fn test_camouflage_vga_mov_manual() {
                     0x0013, 0x0018, 0x0019, 0x0012, 0x0012, 0x0018, 0x0018, 0x0012, 0x0012, 0x0019,
                 ],
             })),
+            stco_atom: Some(Box::new(atom::stco::StcoAtom {
+                atom_head: atom::AtomHead {
+                    atom_offset: 0x65cd,
+                    atom_size: 0x14,
+                    atom_type: atom::stco::ATOM_ID,
+                },
+                atom_version: 0,
+                atom_flags: [0, 0, 0],
+                number_of_entries: 1,
+                chunk_offset_table: vec![0x24],
+            }))
         })),
     );
 }

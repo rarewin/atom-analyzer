@@ -14,6 +14,7 @@ pub struct StblAtom {
     pub ctts_atom: Option<Box<atom::ctts::CttsAtom>>,
     pub stsc_atom: Option<Box<atom::stsc::StscAtom>>,
     pub stsz_atom: Option<Box<atom::stsz::StszAtom>>,
+    pub stco_atom: Option<Box<atom::stco::StcoAtom>>,
 }
 
 impl Atom for StblAtom {}
@@ -79,6 +80,16 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<StblAtom,
         unimplemented!();
     };
 
+    let stco_atom = if let Ok(atom) = atom::parse(r) {
+        if atom.is::<atom::stco::StcoAtom>() {
+            Some(atom.downcast::<atom::stco::StcoAtom>().unwrap()) // @todo
+        } else {
+            unimplemented!();
+        }
+    } else {
+        unimplemented!();
+    };
+
     r.seek(SeekFrom::Start(atom_head.atom_offset + atom_head.atom_size))?;
     Ok(StblAtom {
         atom_head,
@@ -88,5 +99,6 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<StblAtom,
         ctts_atom,
         stsc_atom,
         stsz_atom,
+        stco_atom,
     })
 }
