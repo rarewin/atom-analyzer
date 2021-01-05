@@ -9,6 +9,9 @@ use atom_analyzer::atom::{self, ftyp, mdat, moov, wide};
 use atom_analyzer::element::{qtfile_datetime, qtfile_matrix};
 use atom_analyzer::qtfile;
 
+use atom_analyzer::atom::ctts::CompositionOffsetTableEntry;
+use atom_analyzer::atom::stsc::SampleToChunk;
+
 #[test]
 fn test_camouflage_vga_mov_manual() {
     let file_name = PathBuf::from("tests/samples/camouflage_vga.mov");
@@ -307,7 +310,7 @@ fn test_camouflage_vga_mov_manual() {
                 atom_size: 0x298,
                 atom_type: atom::stbl::ATOM_ID,
             },
-            stsd_atom: Box::new(atom::stsd::StsdAtom {
+            stsd_atom: Some(Box::new(atom::stsd::StsdAtom {
                 atom_head: atom::AtomHead {
                     atom_offset: 0x6351,
                     atom_size: 0xa8,
@@ -323,8 +326,8 @@ fn test_camouflage_vga_mov_manual() {
                     data_reference_index: 1,
                     data: vec![]
                 }]
-            }),
-            stts_atom: Box::new(atom::stts::SttsAtom {
+            })),
+            stts_atom: Some(Box::new(atom::stts::SttsAtom {
                 atom_head: atom::AtomHead {
                     atom_offset: 0x63f9,
                     atom_size: 0x18,
@@ -337,7 +340,98 @@ fn test_camouflage_vga_mov_manual() {
                     sample_count: 0x1e,
                     sample_duration: 0x200,
                 }],
-            })
+            })),
+            stss_atom: Some(Box::new(atom::stss::StssAtom {
+                atom_head: atom::AtomHead {
+                    atom_offset: 0x6411,
+                    atom_size: 0x14,
+                    atom_type: atom::stss::ATOM_ID,
+                },
+                atom_version: 0,
+                atom_flags: [0, 0, 0],
+                number_of_entries: 1,
+                sync_sample_table: vec![1,]
+            })),
+            ctts_atom: Some(Box::new(atom::ctts::CttsAtom {
+                atom_head: atom::AtomHead {
+                    atom_offset: 0x6425,
+                    atom_size: 0x100,
+                    atom_type: atom::ctts::ATOM_ID,
+                },
+                atom_version: 0,
+                atom_flags: [0, 0, 0],
+                entry_count: 30,
+                composition_offset_table: vec![
+                    CompositionOffsetTableEntry::new(1, 0x400),
+                    CompositionOffsetTableEntry::new(1, 0xa00),
+                    CompositionOffsetTableEntry::new(1, 0x400),
+                    CompositionOffsetTableEntry::new(1, 0),
+                    CompositionOffsetTableEntry::new(1, 0x200),
+                    CompositionOffsetTableEntry::new(1, 0xa00),
+                    CompositionOffsetTableEntry::new(1, 0x400),
+                    CompositionOffsetTableEntry::new(1, 0),
+                    CompositionOffsetTableEntry::new(1, 0x200),
+                    CompositionOffsetTableEntry::new(1, 0xa00),
+                    CompositionOffsetTableEntry::new(1, 0x400),
+                    CompositionOffsetTableEntry::new(1, 0),
+                    CompositionOffsetTableEntry::new(1, 0x200),
+                    CompositionOffsetTableEntry::new(1, 0xa00),
+                    CompositionOffsetTableEntry::new(1, 0x400),
+                    CompositionOffsetTableEntry::new(1, 0),
+                    CompositionOffsetTableEntry::new(1, 0x200),
+                    CompositionOffsetTableEntry::new(1, 0xa00),
+                    CompositionOffsetTableEntry::new(1, 0x400),
+                    CompositionOffsetTableEntry::new(1, 0),
+                    CompositionOffsetTableEntry::new(1, 0x200),
+                    CompositionOffsetTableEntry::new(1, 0xa00),
+                    CompositionOffsetTableEntry::new(1, 0x400),
+                    CompositionOffsetTableEntry::new(1, 0),
+                    CompositionOffsetTableEntry::new(1, 0x200),
+                    CompositionOffsetTableEntry::new(1, 0xa00),
+                    CompositionOffsetTableEntry::new(1, 0x400),
+                    CompositionOffsetTableEntry::new(1, 0),
+                    CompositionOffsetTableEntry::new(1, 0x200),
+                    CompositionOffsetTableEntry::new(1, 0x400),
+                ]
+            })),
+            stsc_atom: Some(Box::new(atom::stsc::StscAtom {
+                atom_head: atom::AtomHead {
+                    atom_offset: 0x6525,
+                    atom_size: 0x1c,
+                    atom_type: atom::stsc::ATOM_ID,
+                },
+                atom_version: 0,
+                atom_flags: [0, 0, 0],
+                number_of_entries: 1,
+                sample_to_chunk_table: vec![SampleToChunk::new(1, 30, 1),]
+            })),
+            stsz_atom: Some(Box::new(atom::stsz::StszAtom {
+                atom_head: atom::AtomHead {
+                    atom_offset: 0x6541,
+                    atom_size: 0x8c,
+                    atom_type: atom::stsz::ATOM_ID,
+                },
+                atom_version: 0,
+                atom_flags: [0, 0, 0],
+                sample_size: 0,
+                number_of_entries: 30,
+                sample_size_table: vec![
+                    0x5c82, 0x0187, 0x003d, 0x0033, 0x001f, 0x005a, 0x0024, 0x0017, 0x0017, 0x003a,
+                    0x001a, 0x0012, 0x0012, 0x0039, 0x001b, 0x0012, 0x0012, 0x0034, 0x0019, 0x0012,
+                    0x0013, 0x0018, 0x0019, 0x0012, 0x0012, 0x0018, 0x0018, 0x0012, 0x0012, 0x0019,
+                ],
+            })),
+            stco_atom: Some(Box::new(atom::stco::StcoAtom {
+                atom_head: atom::AtomHead {
+                    atom_offset: 0x65cd,
+                    atom_size: 0x14,
+                    atom_type: atom::stco::ATOM_ID,
+                },
+                atom_version: 0,
+                atom_flags: [0, 0, 0],
+                number_of_entries: 1,
+                chunk_offset_table: vec![0x24],
+            }))
         })),
     );
 }

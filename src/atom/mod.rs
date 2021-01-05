@@ -1,4 +1,5 @@
 #![allow(clippy::transmute_ptr_to_ref)] // for mopa
+pub mod ctts;
 pub mod dinf;
 pub mod dref;
 pub mod edts;
@@ -14,7 +15,11 @@ pub mod moov;
 pub mod mvhd;
 pub mod smhd;
 pub mod stbl;
+pub mod stco;
+pub mod stsc;
 pub mod stsd;
+pub mod stss;
+pub mod stsz;
 pub mod stts;
 pub mod tkhd;
 pub mod trak;
@@ -112,6 +117,11 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Box<dyn Atom>, AtomParseError>
         stbl::ATOM_ID => Box::new(stbl::parse(r, atom_head)?),
         stsd::ATOM_ID => Box::new(stsd::parse(r, atom_head)?),
         stts::ATOM_ID => Box::new(stts::parse(r, atom_head)?),
+        stss::ATOM_ID => Box::new(stss::parse(r, atom_head)?),
+        ctts::ATOM_ID => Box::new(ctts::parse(r, atom_head)?),
+        stsc::ATOM_ID => Box::new(stsc::parse(r, atom_head)?),
+        stsz::ATOM_ID => Box::new(stsz::parse(r, atom_head)?),
+        stco::ATOM_ID => Box::new(stco::parse(r, atom_head)?),
         _ => {
             r.seek(SeekFrom::Start(atom_head.atom_offset + atom_head.atom_size))?;
             Box::new(UnimplementedAtom { atom_head })
