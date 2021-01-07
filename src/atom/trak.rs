@@ -10,6 +10,7 @@ pub struct TrakAtom {
     pub atom_head: atom::AtomHead,
     pub tkhd_atom: Box<atom::tkhd::TkhdAtom>,
     pub edts_atom: Option<Box<atom::edts::EdtsAtom>>,
+    pub tref_atom: Option<Box<atom::tref::TrefAtom>>,
     pub mdia_atom: Box<atom::mdia::MdiaAtom>,
 }
 
@@ -19,6 +20,7 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<TrakAtom,
     let mut tkhd_atom: Option<Box<atom::tkhd::TkhdAtom>> = None;
     let mut edts_atom: Option<Box<atom::edts::EdtsAtom>> = None;
     let mut mdia_atom: Option<Box<atom::mdia::MdiaAtom>> = None;
+    let mut tref_atom: Option<Box<atom::tref::TrefAtom>> = None;
 
     let atom_tail = atom_head.atom_offset + atom_head.atom_size;
 
@@ -29,6 +31,8 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<TrakAtom,
             edts_atom = Some(atom.downcast::<atom::edts::EdtsAtom>().unwrap()); // @todo
         } else if atom.is::<atom::mdia::MdiaAtom>() {
             mdia_atom = Some(atom.downcast::<atom::mdia::MdiaAtom>().unwrap()); // @todo
+        } else if atom.is::<atom::tref::TrefAtom>() {
+            tref_atom = Some(atom.downcast::<atom::tref::TrefAtom>().unwrap()); // @todo
         } else {
             eprintln!("{:?}", atom);
         }
@@ -63,5 +67,6 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<TrakAtom,
         tkhd_atom,
         edts_atom,
         mdia_atom,
+        tref_atom,
     })
 }

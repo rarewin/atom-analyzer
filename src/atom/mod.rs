@@ -23,6 +23,7 @@ pub mod stsz;
 pub mod stts;
 pub mod tkhd;
 pub mod trak;
+pub mod tref;
 pub mod vmhd;
 pub mod wide;
 
@@ -122,6 +123,7 @@ pub fn parse<R: Read + Seek>(r: &mut R) -> Result<Box<dyn Atom>, AtomParseError>
         stsc::ATOM_ID => Box::new(stsc::parse(r, atom_head)?),
         stsz::ATOM_ID => Box::new(stsz::parse(r, atom_head)?),
         stco::ATOM_ID => Box::new(stco::parse(r, atom_head)?),
+        tref::ATOM_ID => Box::new(tref::parse(r, atom_head)?),
         _ => {
             r.seek(SeekFrom::Start(atom_head.atom_offset + atom_head.atom_size))?;
             Box::new(UnimplementedAtom { atom_head })
