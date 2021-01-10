@@ -25,9 +25,12 @@ pub enum MediaInfo {
     SoundMediaInfo {
         smhd_atom: Box<atom::smhd::SmhdAtom>,
     },
+    Unknown,
 }
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MinfAtom, AtomParseError> {
+    let atom_tail = atom_head.atom_offset + atom_head.atom_size;
+
     let media_info = if let Ok(atom) = atom::parse(r) {
         if atom.is::<atom::vmhd::VmhdAtom>() {
             let vmhd_atom = atom.downcast::<atom::vmhd::VmhdAtom>().unwrap(); // @todo
@@ -54,6 +57,10 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MinfAtom,
                 } else {
                     dbg!(&atom);
                 }
+
+                if r.seek(SeekFrom::Current(0))? >= atom_tail {
+                    break;
+                }
             }
 
             MediaInfo::VideoMediaInfo {
@@ -67,7 +74,8 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MinfAtom,
 
             MediaInfo::SoundMediaInfo { smhd_atom }
         } else {
-            todo!("{:?}", atom)
+            dbg!(atom);
+            MediaInfo::Unknown
         }
     } else {
         todo!()

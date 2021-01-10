@@ -18,6 +18,8 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MoovAtom,
     let mut mvhd_atom = None;
     let mut trak_atom = Vec::new();
 
+    let atom_tail = atom_head.atom_offset + atom_head.atom_size;
+
     if atom_head.atom_type != ATOM_ID {
         return Err(AtomParseError::TypeError(atom_head.atom_offset));
     }
@@ -29,6 +31,10 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MoovAtom,
             trak_atom.push(*atom.downcast::<atom::trak::TrakAtom>().unwrap());
         } else {
             eprintln!("{:?}", atom);
+        }
+
+        if r.seek(SeekFrom::Current(0))? >= atom_tail {
+            break;
         }
     }
 
