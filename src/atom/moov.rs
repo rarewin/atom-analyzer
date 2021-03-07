@@ -1,5 +1,7 @@
+use std::cell::RefCell;
 use std::fmt::Debug;
 use std::io::{Read, Seek, SeekFrom};
+use std::rc::Rc;
 
 use crate::atom::{self, Atom, AtomHead, AtomParseError};
 use atom_derive::atom;
@@ -9,8 +11,8 @@ pub const ATOM_ID: u32 = 0x6d6f_6f76; // 'moov'
 #[atom]
 #[derive(Debug, PartialEq)]
 pub struct MoovAtom {
-    pub mvhd_atom: Option<Box<atom::mvhd::MvhdAtom>>,
-    pub trak_atom: Vec<atom::trak::TrakAtom>,
+    pub mvhd_atom: Option<Rc<RefCell<Box<atom::mvhd::MvhdAtom>>>>,
+    pub trak_atom: Rc<RefCell<Vec<atom::trak::TrakAtom>>>,
 }
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MoovAtom, AtomParseError> {
@@ -25,7 +27,9 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MoovAtom,
 
     while let Ok(atom) = atom::parse(r) {
         if atom.is::<atom::mvhd::MvhdAtom>() {
-            mvhd_atom = Some(atom.downcast::<atom::mvhd::MvhdAtom>().unwrap()); // @todo
+            mvhd_atom = Some(Rc::new(RefCell::new(
+                atom.downcast::<atom::mvhd::MvhdAtom>().unwrap(),
+            ))); // @todo
         } else if atom.is::<atom::trak::TrakAtom>() {
             trak_atom.push(*atom.downcast::<atom::trak::TrakAtom>().unwrap());
         } else {
@@ -42,6 +46,6 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MoovAtom,
     Ok(MoovAtom {
         atom_head,
         mvhd_atom,
-        trak_atom,
+        trak_atom: Rc::new(RefCell::new(trak_atom)),
     })
 }

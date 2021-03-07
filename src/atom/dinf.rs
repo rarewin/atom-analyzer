@@ -1,5 +1,7 @@
+use std::cell::RefCell;
 use std::fmt::Debug;
 use std::io::{Read, Seek, SeekFrom};
+use std::rc::Rc;
 
 use crate::atom::{self, Atom, AtomHead, AtomParseError};
 use atom_derive::atom;
@@ -9,7 +11,7 @@ pub const ATOM_ID: u32 = 0x6469_6e66; // 'dinf'
 #[atom]
 #[derive(Debug, PartialEq)]
 pub struct DinfAtom {
-    pub dref_atom: Box<atom::dref::DrefAtom>,
+    pub dref_atom: Rc<RefCell<Box<atom::dref::DrefAtom>>>,
 }
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<DinfAtom, AtomParseError> {
@@ -26,6 +28,6 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<DinfAtom,
     r.seek(SeekFrom::Start(atom_head.atom_offset + atom_head.atom_size))?;
     Ok(DinfAtom {
         atom_head,
-        dref_atom,
+        dref_atom: Rc::new(RefCell::new(dref_atom)),
     })
 }

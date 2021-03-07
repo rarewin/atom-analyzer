@@ -1,6 +1,8 @@
 #![allow(clippy::transmute_ptr_to_ref)] // for mopa
+use std::cell::RefCell;
 use std::fmt::Debug;
 use std::io::{Read, Seek, SeekFrom};
+use std::rc::Rc;
 
 use crate::atom::{self, Atom, AtomHead, AtomParseError};
 use atom_derive::atom;
@@ -16,13 +18,13 @@ pub struct MinfAtom {
 #[derive(Debug, PartialEq)]
 pub enum MediaInfo {
     VideoMediaInfo {
-        vmhd_atom: Box<atom::vmhd::VmhdAtom>,
-        hdlr_atom: Box<atom::hdlr::HdlrAtom>,
-        dinf_atom: Option<Box<atom::dinf::DinfAtom>>,
-        stbl_atom: Option<Box<atom::stbl::StblAtom>>,
+        vmhd_atom: Rc<RefCell<Box<atom::vmhd::VmhdAtom>>>,
+        hdlr_atom: Rc<RefCell<Box<atom::hdlr::HdlrAtom>>>,
+        dinf_atom: Option<Rc<RefCell<Box<atom::dinf::DinfAtom>>>>,
+        stbl_atom: Option<Rc<RefCell<Box<atom::stbl::StblAtom>>>>,
     },
     SoundMediaInfo {
-        smhd_atom: Box<atom::smhd::SmhdAtom>,
+        smhd_atom: Rc<RefCell<Box<atom::smhd::SmhdAtom>>>,
     },
     Unknown,
 }
@@ -32,10 +34,15 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MinfAtom,
 
     let media_info = if let Ok(atom) = atom::parse(r) {
         if atom.is::<atom::vmhd::VmhdAtom>() {
-            let vmhd_atom = atom.downcast::<atom::vmhd::VmhdAtom>().unwrap(); // @todo
+            let vmhd_atom = Rc::new(RefCell::new(
+                atom.downcast::<atom::vmhd::VmhdAtom>().unwrap(),
+            )); // @todo
             let hdlr_atom = if let Ok(atom) = atom::parse(r) {
                 if atom.is::<atom::hdlr::HdlrAtom>() {
-                    atom.downcast::<atom::hdlr::HdlrAtom>().unwrap() // @todo
+                    Rc::new(RefCell::new(
+                        atom.downcast::<atom::hdlr::HdlrAtom>().unwrap(),
+                    ))
+                // @todo
                 } else {
                     return Err(AtomParseError::RequiredAtomNotFound(atom::hdlr::ATOM_ID));
                 }
@@ -43,16 +50,20 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MinfAtom,
                 return Err(AtomParseError::RequiredAtomNotFound(atom::hdlr::ATOM_ID));
             };
 
-            let mut dinf_atom: Option<Box<atom::dinf::DinfAtom>> = None;
-            let mut stbl_atom: Option<Box<atom::stbl::StblAtom>> = None;
+            let mut dinf_atom: Option<Rc<RefCell<Box<atom::dinf::DinfAtom>>>> = None;
+            let mut stbl_atom: Option<Rc<RefCell<Box<atom::stbl::StblAtom>>>> = None;
 
             while let Ok(atom) = atom::parse(r) {
                 if atom.is::<atom::dinf::DinfAtom>() {
                     // @todo
-                    dinf_atom = Some(atom.downcast::<atom::dinf::DinfAtom>().unwrap());
+                    dinf_atom = Some(Rc::new(RefCell::new(
+                        atom.downcast::<atom::dinf::DinfAtom>().unwrap(),
+                    )));
                 } else if atom.is::<atom::stbl::StblAtom>() {
                     // @todo
-                    stbl_atom = Some(atom.downcast::<atom::stbl::StblAtom>().unwrap());
+                    stbl_atom = Some(Rc::new(RefCell::new(
+                        atom.downcast::<atom::stbl::StblAtom>().unwrap(),
+                    )));
                 } else {
                     dbg!(&atom);
                 }
@@ -69,7 +80,9 @@ pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MinfAtom,
                 stbl_atom,
             }
         } else if atom.is::<atom::smhd::SmhdAtom>() {
-            let smhd_atom = atom.downcast::<atom::smhd::SmhdAtom>().unwrap(); // @todo
+            let smhd_atom = Rc::new(RefCell::new(
+                atom.downcast::<atom::smhd::SmhdAtom>().unwrap(),
+            )); // @todo
 
             MediaInfo::SoundMediaInfo { smhd_atom }
         } else {
