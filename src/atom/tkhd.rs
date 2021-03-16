@@ -10,7 +10,7 @@ use fixed::{
 use crate::atom::{self, Atom, AtomHead, AtomParseError};
 use crate::element;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct TkhdAtom {
     pub atom_head: atom::AtomHead,
     pub atom_version: u8,
@@ -29,8 +29,6 @@ pub struct TkhdAtom {
     pub track_width: FixedU32<U16>,
     pub track_height: FixedU32<U16>,
 }
-
-impl Atom for TkhdAtom {}
 
 pub const ATOM_ID: u32 = 0x746b_6864; // 'tkhd'
 

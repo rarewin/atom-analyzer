@@ -7,7 +7,7 @@ use crate::atom::{Atom, AtomHead, AtomParseError};
 
 pub const ATOM_ID: u32 = 0x6374_7473; // 'ctts'
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct CttsAtom {
     pub atom_head: AtomHead,
     pub atom_version: u8,
@@ -15,8 +15,6 @@ pub struct CttsAtom {
     pub entry_count: u32,
     pub composition_offset_table: Vec<CompositionOffsetTableEntry>,
 }
-
-impl Atom for CttsAtom {}
 
 #[derive(Debug, PartialEq)]
 pub struct CompositionOffsetTableEntry {

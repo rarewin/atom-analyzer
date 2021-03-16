@@ -25,15 +25,13 @@ fn match_brand(val: u32) -> Brand {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct FtypAtom {
     pub atom_head: atom::AtomHead,
     pub major_brand: Brand,
     pub minor_version: u32,
     pub compatible_brands: Vec<Brand>,
 }
-
-impl Atom for FtypAtom {}
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<FtypAtom, AtomParseError> {
     let atom_offset = atom_head.atom_offset;

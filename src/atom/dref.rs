@@ -7,7 +7,7 @@ use crate::atom::{self, Atom, AtomHead, AtomParseError};
 
 pub const ATOM_ID: u32 = 0x6472_6566; // 'dref'
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct DrefAtom {
     pub atom_head: AtomHead,
     pub atom_version: u8,
@@ -15,8 +15,6 @@ pub struct DrefAtom {
     pub number_of_entries: u32,
     pub data_references: Vec<DataReferenceType>,
 }
-
-impl Atom for DrefAtom {}
 
 #[derive(Debug, PartialEq)]
 pub enum DataReferenceType {

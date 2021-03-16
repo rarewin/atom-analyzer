@@ -8,7 +8,7 @@ use crate::element;
 
 pub const ATOM_ID: u32 = 0x6d76_6864; // 'mvhd'
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct MvhdAtom {
     pub atom_head: atom::AtomHead,
     pub atom_version: u8,
@@ -28,8 +28,6 @@ pub struct MvhdAtom {
     pub current_time: element::qtfile_datetime::QtFileDateTime,
     pub next_track_id: u32,
 }
-
-impl Atom for MvhdAtom {}
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MvhdAtom, AtomParseError> {
     let atom_version = r.read_u8()?;

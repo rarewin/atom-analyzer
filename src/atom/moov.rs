@@ -5,14 +5,12 @@ use crate::atom::{self, Atom, AtomHead, AtomParseError};
 
 pub const ATOM_ID: u32 = 0x6d6f_6f76; // 'moov'
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct MoovAtom {
     pub atom_head: AtomHead,
     pub mvhd_atom: Option<Box<atom::mvhd::MvhdAtom>>,
     pub trak_atom: Vec<atom::trak::TrakAtom>,
 }
-
-impl Atom for MoovAtom {}
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MoovAtom, AtomParseError> {
     let mut mvhd_atom = None;

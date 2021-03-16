@@ -7,7 +7,7 @@ use crate::atom::{Atom, AtomHead, AtomParseError};
 
 pub const ATOM_ID: u32 = 0x7374_636f; // 'stco'
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct StcoAtom {
     pub atom_head: AtomHead,
     pub atom_version: u8,
@@ -15,8 +15,6 @@ pub struct StcoAtom {
     pub number_of_entries: u32,
     pub chunk_offset_table: Vec<u32>,
 }
-
-impl Atom for StcoAtom {}
 
 pub fn parse<R: Read>(r: &mut R, atom_head: AtomHead) -> Result<StcoAtom, AtomParseError> {
     let atom_version = r.read_u8()?;

@@ -6,13 +6,11 @@ use crate::atom::{self, Atom, AtomHead, AtomParseError};
 
 pub const ATOM_ID: u32 = 0x6d69_6e66; // 'minf'
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct MinfAtom {
     pub atom_head: AtomHead,
     pub media_info: MediaInfo,
 }
-
-impl Atom for MinfAtom {}
 
 #[derive(Debug, PartialEq)]
 pub enum MediaInfo {

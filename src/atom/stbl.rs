@@ -5,7 +5,7 @@ use crate::atom::{self, Atom, AtomHead, AtomParseError};
 
 pub const ATOM_ID: u32 = 0x7374_626c; // 'stbl'
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct StblAtom {
     pub atom_head: AtomHead,
     pub stsd_atom: Option<Box<atom::stsd::StsdAtom>>,
@@ -16,8 +16,6 @@ pub struct StblAtom {
     pub stsz_atom: Option<Box<atom::stsz::StszAtom>>,
     pub stco_atom: Option<Box<atom::stco::StcoAtom>>,
 }
-
-impl Atom for StblAtom {}
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<StblAtom, AtomParseError> {
     let mut stsd_atom: Option<Box<atom::stsd::StsdAtom>> = None;

@@ -16,7 +16,7 @@ pub struct SampleDescription {
     pub data: Vec<u8>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct StsdAtom {
     pub atom_head: AtomHead,
     pub atom_version: u8,
@@ -24,8 +24,6 @@ pub struct StsdAtom {
     pub number_of_entries: u32,
     pub sample_description_table: Vec<SampleDescription>,
 }
-
-impl Atom for StsdAtom {}
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<StsdAtom, AtomParseError> {
     let atom_version = r.read_u8()?;

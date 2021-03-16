@@ -13,7 +13,7 @@ pub struct TimeToSampleEntry {
     pub sample_duration: u32,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct SttsAtom {
     pub atom_head: AtomHead,
     pub atom_version: u8,
@@ -21,8 +21,6 @@ pub struct SttsAtom {
     pub number_of_entries: u32,
     pub time_to_sample_table: Vec<TimeToSampleEntry>,
 }
-
-impl Atom for SttsAtom {}
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<SttsAtom, AtomParseError> {
     let atom_version = r.read_u8()?;

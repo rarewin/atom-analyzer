@@ -7,7 +7,7 @@ use crate::atom::{Atom, AtomHead, AtomParseError};
 
 pub const ATOM_ID: u32 = 0x7374_7363; // 'stsc'
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct StscAtom {
     pub atom_head: AtomHead,
     pub atom_version: u8,
@@ -32,8 +32,6 @@ impl SampleToChunk {
         }
     }
 }
-
-impl Atom for StscAtom {}
 
 pub fn parse<R: Read>(r: &mut R, atom_head: AtomHead) -> Result<StscAtom, AtomParseError> {
     let atom_version = r.read_u8()?;

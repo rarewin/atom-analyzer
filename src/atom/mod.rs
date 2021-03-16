@@ -33,6 +33,7 @@ use byteorder::{BigEndian, ByteOrder, ReadBytesExt};
 use thiserror::Error;
 
 use crate::element::ElementParseError;
+use atom_derive::Atom;
 
 pub trait Atom: mopa::Any + std::fmt::Debug {}
 
@@ -65,12 +66,10 @@ pub enum AtomParseError {
     ElementParseError(#[from] ElementParseError),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Atom)]
 pub struct UnimplementedAtom {
     pub atom_head: AtomHead,
 }
-
-impl Atom for UnimplementedAtom {}
 
 impl fmt::Debug for AtomHead {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

@@ -1,12 +1,13 @@
 use std::fmt::Debug;
 use std::io::{Read, Seek, SeekFrom};
 
-use crate::atom::{Atom, AtomHead, AtomParseError};
 use byteorder::{BigEndian, ReadBytesExt};
+
+use crate::atom::{Atom, AtomHead, AtomParseError};
 
 pub const ATOM_ID: u32 = 0x6864_6c72; // 'hdlr'
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct HdlrAtom {
     pub atom_head: AtomHead,
     pub atom_version: u8,
@@ -18,8 +19,6 @@ pub struct HdlrAtom {
     pub component_flags_mask: u32,
     pub component_name: String,
 }
-
-impl Atom for HdlrAtom {}
 
 #[derive(Debug, PartialEq)]
 pub enum ComponentType {

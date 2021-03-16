@@ -8,7 +8,7 @@ use crate::atom::{Atom, AtomHead, AtomParseError};
 
 pub const ATOM_ID: u32 = 0x65_6c_73_74; // 'elst'
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Atom)]
 pub struct ElstAtom {
     pub atom_head: AtomHead,
     pub atom_version: u8,
@@ -16,8 +16,6 @@ pub struct ElstAtom {
     pub number_of_entries: u32,
     pub edit_list_table: Vec<EditListTableEntry>,
 }
-
-impl Atom for ElstAtom {}
 
 #[derive(Debug, PartialEq)]
 pub struct EditListTableEntry {
