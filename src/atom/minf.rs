@@ -3,16 +3,15 @@ use std::fmt::Debug;
 use std::io::{Read, Seek, SeekFrom};
 
 use crate::atom::{self, Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x6d69_6e66; // 'minf'
 
+#[atom]
 #[derive(Debug, PartialEq)]
 pub struct MinfAtom {
-    pub atom_head: AtomHead,
     pub media_info: MediaInfo,
 }
-
-impl Atom for MinfAtom {}
 
 #[derive(Debug, PartialEq)]
 pub enum MediaInfo {

@@ -3,16 +3,15 @@ use std::io::{Read, Seek};
 
 use byteorder::{BigEndian, ReadBytesExt};
 
-use crate::atom::{self, Atom, AtomHead, AtomParseError};
+use crate::atom::{Atom, AtomHead, AtomParseError};
 use crate::element;
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x6d76_6864; // 'mvhd'
 
+#[atom(version)]
 #[derive(Debug, PartialEq)]
 pub struct MvhdAtom {
-    pub atom_head: atom::AtomHead,
-    pub atom_version: u8,
-    pub atom_flags: [u8; 3],
     pub creation_time: element::qtfile_datetime::QtFileDateTime,
     pub modification_time: element::qtfile_datetime::QtFileDateTime,
     pub time_scale: u32,
@@ -28,8 +27,6 @@ pub struct MvhdAtom {
     pub current_time: element::qtfile_datetime::QtFileDateTime,
     pub next_track_id: u32,
 }
-
-impl Atom for MvhdAtom {}
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MvhdAtom, AtomParseError> {
     let atom_version = r.read_u8()?;

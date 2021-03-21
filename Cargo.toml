@@ -13,3 +13,5 @@ time = "0.1"
 fixed = "0.5"
 thiserror = "1.0"
 mopa = "0.2.2"
+
+atom_derive = { path = "./atom_derive" }

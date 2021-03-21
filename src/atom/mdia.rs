@@ -2,18 +2,17 @@ use std::fmt::Debug;
 use std::io::{Read, Seek, SeekFrom};
 
 use crate::atom::{self, Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x6d_64_69_61; // 'mdia'
 
+#[atom]
 #[derive(Debug, PartialEq)]
 pub struct MdiaAtom {
-    pub atom_head: atom::AtomHead,
     pub mdhd_atom: Box<atom::mdhd::MdhdAtom>,
     pub hdlr_atom: Option<Box<atom::hdlr::HdlrAtom>>,
     pub minf_atom: Option<Box<atom::minf::MinfAtom>>,
 }
-
-impl Atom for MdiaAtom {}
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MdiaAtom, AtomParseError> {
     let mut mdhd_atom: Option<Box<atom::mdhd::MdhdAtom>> = None;

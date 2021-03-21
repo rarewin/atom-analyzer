@@ -4,14 +4,13 @@ use std::io::Read;
 use byteorder::{BigEndian, ReadBytesExt};
 
 use crate::atom::{Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x7374_7363; // 'stsc'
 
+#[atom(version)]
 #[derive(Debug, PartialEq)]
 pub struct StscAtom {
-    pub atom_head: AtomHead,
-    pub atom_version: u8,
-    pub atom_flags: [u8; 3],
     pub number_of_entries: u32,
     pub sample_to_chunk_table: Vec<SampleToChunk>,
 }
@@ -32,8 +31,6 @@ impl SampleToChunk {
         }
     }
 }
-
-impl Atom for StscAtom {}
 
 pub fn parse<R: Read>(r: &mut R, atom_head: AtomHead) -> Result<StscAtom, AtomParseError> {
     let atom_version = r.read_u8()?;

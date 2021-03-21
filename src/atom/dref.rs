@@ -4,19 +4,16 @@ use std::io::{Read, Seek, SeekFrom};
 use byteorder::{BigEndian, ReadBytesExt};
 
 use crate::atom::{self, Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x6472_6566; // 'dref'
 
+#[atom(version)]
 #[derive(Debug, PartialEq)]
 pub struct DrefAtom {
-    pub atom_head: AtomHead,
-    pub atom_version: u8,
-    pub atom_flags: [u8; 3],
     pub number_of_entries: u32,
     pub data_references: Vec<DataReferenceType>,
 }
-
-impl Atom for DrefAtom {}
 
 #[derive(Debug, PartialEq)]
 pub enum DataReferenceType {

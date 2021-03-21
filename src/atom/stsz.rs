@@ -4,20 +4,17 @@ use std::io::Read;
 use byteorder::{BigEndian, ReadBytesExt};
 
 use crate::atom::{Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x7374_737a; // 'stsz'
 
+#[atom(version)]
 #[derive(Debug, PartialEq)]
 pub struct StszAtom {
-    pub atom_head: AtomHead,
-    pub atom_version: u8,
-    pub atom_flags: [u8; 3],
     pub sample_size: u32,
     pub number_of_entries: u32,
     pub sample_size_table: Vec<u32>,
 }
-
-impl Atom for StszAtom {}
 
 pub fn parse<R: Read>(r: &mut R, atom_head: AtomHead) -> Result<StszAtom, AtomParseError> {
     let atom_version = r.read_u8()?;

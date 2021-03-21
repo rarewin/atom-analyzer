@@ -5,17 +5,16 @@ use byteorder::{BigEndian, ReadBytesExt};
 use fixed::{types::extra::U8, FixedI16};
 
 use crate::atom::{Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x736d_6864; // 'smhd'
 
+#[atom]
 #[derive(Debug, PartialEq)]
 pub struct SmhdAtom {
-    pub atom_head: AtomHead,
     pub balance: FixedI16<U8>,
     pub reserved: u16,
 }
-
-impl Atom for SmhdAtom {}
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<SmhdAtom, AtomParseError> {
     let balance = FixedI16::<U8>::from_bits(r.read_i16::<BigEndian>()?);

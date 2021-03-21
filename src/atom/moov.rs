@@ -2,17 +2,16 @@ use std::fmt::Debug;
 use std::io::{Read, Seek, SeekFrom};
 
 use crate::atom::{self, Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x6d6f_6f76; // 'moov'
 
+#[atom]
 #[derive(Debug, PartialEq)]
 pub struct MoovAtom {
-    pub atom_head: AtomHead,
     pub mvhd_atom: Option<Box<atom::mvhd::MvhdAtom>>,
     pub trak_atom: Vec<atom::trak::TrakAtom>,
 }
-
-impl Atom for MoovAtom {}
 
 pub fn parse<R: Read + Seek>(r: &mut R, atom_head: AtomHead) -> Result<MoovAtom, AtomParseError> {
     let mut mvhd_atom = None;
