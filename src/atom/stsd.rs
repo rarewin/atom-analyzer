@@ -4,6 +4,7 @@ use std::io::{Read, Seek, SeekFrom};
 use byteorder::{BigEndian, ReadBytesExt};
 
 use crate::atom::{Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x7374_7364; // 'stsd'
 
@@ -16,11 +17,9 @@ pub struct SampleDescription {
     pub data: Vec<u8>,
 }
 
-#[derive(Debug, PartialEq, Atom)]
+#[atom(version)]
+#[derive(Debug, PartialEq)]
 pub struct StsdAtom {
-    pub atom_head: AtomHead,
-    pub atom_version: u8,
-    pub atom_flags: [u8; 3],
     pub number_of_entries: u32,
     pub sample_description_table: Vec<SampleDescription>,
 }

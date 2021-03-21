@@ -3,7 +3,8 @@ use std::io::{Read, Seek, SeekFrom};
 
 use byteorder::{BigEndian, ReadBytesExt};
 
-use crate::atom::{self, Atom, AtomHead, AtomParseError};
+use crate::atom::{Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 #[derive(Debug, PartialEq)]
 pub enum Brand {
@@ -25,9 +26,9 @@ fn match_brand(val: u32) -> Brand {
     }
 }
 
-#[derive(Debug, PartialEq, Atom)]
+#[atom]
+#[derive(Debug, PartialEq)]
 pub struct FtypAtom {
-    pub atom_head: atom::AtomHead,
     pub major_brand: Brand,
     pub minor_version: u32,
     pub compatible_brands: Vec<Brand>,

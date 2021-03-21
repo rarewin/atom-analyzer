@@ -5,12 +5,13 @@ use byteorder::{BigEndian, ReadBytesExt};
 use fixed::{types::extra::U8, FixedI16};
 
 use crate::atom::{Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x736d_6864; // 'smhd'
 
-#[derive(Debug, PartialEq, Atom)]
+#[atom]
+#[derive(Debug, PartialEq)]
 pub struct SmhdAtom {
-    pub atom_head: AtomHead,
     pub balance: FixedI16<U8>,
     pub reserved: u16,
 }

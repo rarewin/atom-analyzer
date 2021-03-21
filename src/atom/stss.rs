@@ -4,14 +4,13 @@ use std::io::{Read, Seek};
 use byteorder::{BigEndian, ReadBytesExt};
 
 use crate::atom::{Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x7374_7373; // 'stss'
 
-#[derive(Debug, PartialEq, Atom)]
+#[atom(version)]
+#[derive(Debug, PartialEq)]
 pub struct StssAtom {
-    pub atom_head: AtomHead,
-    pub atom_version: u8,
-    pub atom_flags: [u8; 3],
     pub number_of_entries: u32,
     pub sync_sample_table: Vec<u32>,
 }

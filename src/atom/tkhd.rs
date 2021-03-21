@@ -7,14 +7,13 @@ use fixed::{
     FixedU16, FixedU32,
 };
 
-use crate::atom::{self, Atom, AtomHead, AtomParseError};
+use crate::atom::{Atom, AtomHead, AtomParseError};
 use crate::element;
+use atom_derive::atom;
 
-#[derive(Debug, PartialEq, Atom)]
+#[atom(version)]
+#[derive(Debug, PartialEq)]
 pub struct TkhdAtom {
-    pub atom_head: atom::AtomHead,
-    pub atom_version: u8,
-    pub atom_flags: [u8; 3],
     pub creation_time: element::qtfile_datetime::QtFileDateTime,
     pub modification_time: element::qtfile_datetime::QtFileDateTime,
     pub track_id: u32,

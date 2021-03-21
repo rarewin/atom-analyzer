@@ -2,12 +2,13 @@ use std::fmt::Debug;
 use std::io::{Read, Seek, SeekFrom};
 
 use crate::atom::{self, Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x6d_64_69_61; // 'mdia'
 
-#[derive(Debug, PartialEq, Atom)]
+#[atom]
+#[derive(Debug, PartialEq)]
 pub struct MdiaAtom {
-    pub atom_head: atom::AtomHead,
     pub mdhd_atom: Box<atom::mdhd::MdhdAtom>,
     pub hdlr_atom: Option<Box<atom::hdlr::HdlrAtom>>,
     pub minf_atom: Option<Box<atom::minf::MinfAtom>>,

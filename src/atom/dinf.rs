@@ -2,12 +2,13 @@ use std::fmt::Debug;
 use std::io::{Read, Seek, SeekFrom};
 
 use crate::atom::{self, Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x6469_6e66; // 'dinf'
 
-#[derive(Debug, PartialEq, Atom)]
+#[atom]
+#[derive(Debug, PartialEq)]
 pub struct DinfAtom {
-    pub atom_head: AtomHead,
     pub dref_atom: Box<atom::dref::DrefAtom>,
 }
 

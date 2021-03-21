@@ -4,14 +4,13 @@ use std::io::Read;
 use byteorder::{BigEndian, ReadBytesExt};
 
 use crate::atom::{Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x6374_7473; // 'ctts'
 
-#[derive(Debug, PartialEq, Atom)]
+#[atom(version)]
+#[derive(Debug, PartialEq)]
 pub struct CttsAtom {
-    pub atom_head: AtomHead,
-    pub atom_version: u8,
-    pub atom_flags: [u8; 3],
     pub entry_count: u32,
     pub composition_offset_table: Vec<CompositionOffsetTableEntry>,
 }

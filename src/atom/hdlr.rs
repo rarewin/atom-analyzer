@@ -4,14 +4,13 @@ use std::io::{Read, Seek, SeekFrom};
 use byteorder::{BigEndian, ReadBytesExt};
 
 use crate::atom::{Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x6864_6c72; // 'hdlr'
 
-#[derive(Debug, PartialEq, Atom)]
+#[atom(version)]
+#[derive(Debug, PartialEq)]
 pub struct HdlrAtom {
-    pub atom_head: AtomHead,
-    pub atom_version: u8,
-    pub atom_flags: [u8; 3],
     pub component_type: ComponentType,
     pub component_sub_type: ComponentSubType,
     pub component_manufacturer: u32,

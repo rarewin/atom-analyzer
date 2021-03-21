@@ -2,12 +2,13 @@ use std::fmt::Debug;
 use std::io::{Read, Seek, SeekFrom};
 
 use crate::atom::{self, Atom, AtomHead, AtomParseError};
+use atom_derive::atom;
 
 pub const ATOM_ID: u32 = 0x7374_626c; // 'stbl'
 
-#[derive(Debug, PartialEq, Atom)]
+#[atom]
+#[derive(Debug, PartialEq)]
 pub struct StblAtom {
-    pub atom_head: AtomHead,
     pub stsd_atom: Option<Box<atom::stsd::StsdAtom>>,
     pub stts_atom: Option<Box<atom::stts::SttsAtom>>,
     pub stss_atom: Option<Box<atom::stss::StssAtom>>,
