@@ -1,6 +1,8 @@
+use std::cell::RefCell;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
+use std::rc::Rc;
 
 use thiserror::Error;
 
@@ -19,29 +21,26 @@ pub enum QtFileError {
 
 #[derive(Debug)]
 pub struct QtFile {
-    atoms: Vec<Box<dyn Atom>>,
+    atoms: Vec<Rc<RefCell<Box<dyn Atom>>>>,
 }
 
-impl Iterator for QtFile {
-    type Item = Box<dyn Atom>;
+impl std::iter::IntoIterator for QtFile {
+    type Item = Rc<RefCell<Box<dyn Atom>>>;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
 
-    fn next(&mut self) -> Option<Self::Item> {
-        self.atoms.reverse();
-        let atom = self.atoms.pop();
-        self.atoms.reverse();
-
-        atom
+    fn into_iter(self) -> Self::IntoIter {
+        self.atoms.into_iter()
     }
 }
 
 pub fn parse_file(file_name: PathBuf) -> Result<QtFile, QtFileError> {
     let f = File::open(file_name)?;
     let mut reader = BufReader::new(f);
-    let mut atoms = Vec::<Box<dyn Atom>>::new();
+    let mut atoms = Vec::<Rc<RefCell<Box<dyn Atom>>>>::new();
 
     loop {
         match atom::parse(&mut reader) {
-            Ok(a) => atoms.push(a),
+            Ok(a) => atoms.push(Rc::new(RefCell::new(a))),
             Err(atom::AtomParseError::NoMoreAtom) => break,
             Err(e) => {
                 return Err(QtFileError::AtomParseError(e));
