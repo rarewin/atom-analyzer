@@ -15,9 +15,10 @@ use atom_analyzer::atom::stsc::SampleToChunk;
 #[test]
 fn test_camouflage_vga_mov_manual() {
     let file_name = PathBuf::from("tests/samples/camouflage_vga.mov");
-    let mut qt = qtfile::parse_file(file_name).unwrap();
+    let mut qt = qtfile::parse_file(file_name).unwrap().into_iter();
 
-    let ftyp = qt.next().unwrap();
+    let ftyp_atom = qt.next().unwrap().clone();
+    let ftyp = ftyp_atom.borrow();
 
     assert!(ftyp.is::<ftyp::FtypAtom>());
     assert_eq!(
@@ -34,7 +35,8 @@ fn test_camouflage_vga_mov_manual() {
         })
     );
 
-    let wide = qt.next().unwrap();
+    let wide_atom = qt.next().unwrap().clone();
+    let wide = wide_atom.borrow();
 
     assert!(wide.is::<wide::WideAtom>());
     assert_eq!(
@@ -48,7 +50,8 @@ fn test_camouflage_vga_mov_manual() {
         }),
     );
 
-    let mdat = qt.next().unwrap();
+    let mdat_atom = qt.next().unwrap().clone();
+    let mdat = mdat_atom.borrow();
 
     assert!(mdat.is::<mdat::MdatAtom>());
     assert_eq!(
@@ -62,7 +65,8 @@ fn test_camouflage_vga_mov_manual() {
         }),
     );
 
-    let moov = qt.next().unwrap();
+    let moov_atom = qt.next().unwrap().clone();
+    let moov = moov_atom.borrow();
 
     assert!(moov.is::<moov::MoovAtom>());
 
