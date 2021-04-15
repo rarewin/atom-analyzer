@@ -172,15 +172,15 @@ pub fn parse_atom_head<R: Read + Seek>(r: &mut R) -> Result<AtomHead, AtomParseE
 
     let atom_type = r.read_u32::<BigEndian>()?;
 
-    if atom_size == 0 {
-        unimplemented!("atom with zero size is not implemented yet");
-    }
-
-    // extended size
-    let atom_size = if atom_size == 1 {
-        r.read_u64::<BigEndian>()?
-    } else {
-        atom_size
+    let atom_size = match atom_size {
+        0 => {
+            // @todo  0 is allowed only for a top-level atom
+            let atom_tail = r.seek(SeekFrom::End(0))?;
+            r.seek(SeekFrom::Start(atom_offset + 8))?;
+            atom_tail - atom_offset
+        }
+        1 => r.read_u64::<BigEndian>()?, // extended size
+        s => s,
     };
 
     Ok(AtomHead {
