@@ -46,7 +46,7 @@ pub enum ComponentSubType {
     ClosedCaptioningMedia,
     SubtitleMedia,
     MusicMedia,
-    MPEG1Media,
+    Mpeg1Media,
     SpriteMedia,
     TweenMedia,
     ModifierTracks,
@@ -54,7 +54,7 @@ pub enum ComponentSubType {
     ThreeDimensionalMedia,
     StreamingMedia,
     HintMedia,
-    VRMedia,
+    VrMedia,
     MovieMedia,
     Unknown(u32),
 }
@@ -70,7 +70,7 @@ impl ComponentSubType {
             0x636c_6370 => ComponentSubType::ClosedCaptioningMedia, // 'clcp'
             0x7362_746c => ComponentSubType::SubtitleMedia, // 'sbtl'
             0x6d75_7369 => ComponentSubType::MusicMedia, // 'musi'
-            0x4d50_4547 => ComponentSubType::MPEG1Media, // 'MPEG
+            0x4d50_4547 => ComponentSubType::Mpeg1Media, // 'MPEG
             0x7370_7274 => ComponentSubType::SpriteMedia, // 'sprt'
             0x7477_656e => ComponentSubType::TweenMedia, //'twen'
             0x7164_3364 => ComponentSubType::ThreeDimensionalMedia, // 'qd3d'
