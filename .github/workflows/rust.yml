@@ -22,6 +22,15 @@ jobs:
         with:
           command: test
           args: --verbose
+      - run: sudo apt-get update && sudo apt-get install qt5-qmake qtbase5-dev
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --verbose --release --features=gui
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --verbose --features=gui
 
   stable:
     name: Build Check with stable
@@ -41,6 +50,15 @@ jobs:
         with:
           command: test
           args: --verbose
+      - run: sudo apt-get update && sudo apt-get install qt5-qmake qtbase5-dev
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --verbose --release --features=gui
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --verbose --features=gui
 
   fmt:
     name: Format Check with rustfmt
