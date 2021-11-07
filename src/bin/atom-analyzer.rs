@@ -4,9 +4,9 @@ use atom_analyzer::qtfile::{self, QtFileError};
 use clap::Clap;
 
 #[cfg(feature = "gui")]
-use qt_core::QBox;
+use qt_core::{qs, QBox, QPtr};
 #[cfg(feature = "gui")]
-use qt_widgets::{QApplication, QWidget};
+use qt_widgets::{QAction, QApplication, QMainWindow, QMenu, QVBoxLayout};
 #[cfg(feature = "gui")]
 use std::rc::Rc;
 
@@ -19,19 +19,38 @@ struct Opts {
 
 #[cfg(feature = "gui")]
 struct MainWindow {
-    widget: QBox<QWidget>,
+    main_window: QBox<QMainWindow>,
+
+    menu_file: QPtr<QMenu>,
 }
 
 #[cfg(feature = "gui")]
 impl MainWindow {
     fn new() -> Rc<MainWindow> {
-        let widget = unsafe { QWidget::new_0a() };
+        let main_window = unsafe { QMainWindow::new_0a() };
 
-        Rc::new(Self { widget })
+        let menu_file = unsafe { main_window.menu_bar().add_menu_q_string(&qs("&File")) };
+
+        let mut this = Self {
+            main_window,
+            menu_file,
+        };
+
+        this.init();
+
+        Rc::new(this)
+    }
+
+    fn init(&mut self) {
+        unsafe {
+            let action_quit = QAction::from_q_string(&qs("Quit"));
+
+            self.menu_file.add_action(&action_quit);
+        }
     }
 
     fn show(&self) {
-        unsafe { self.widget.show() };
+        unsafe { self.main_window.show() };
     }
 }
 
