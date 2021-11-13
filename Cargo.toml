@@ -13,10 +13,11 @@ time = "0.1"
 fixed = "0.5"
 thiserror = "1.0"
 mopa = "0.2.2"
+cpp_core = { version = "0.6.0", optional = true }
 qt_core = { version = "0.5.0", optional = true }
 qt_widgets = { version = "0.5.0", optional = true }
 
 atom_derive = { path = "./atom_derive" }
 
 [features]
-gui = ["qt_core", "qt_widgets"]
+gui = ["cpp_core", "qt_core", "qt_widgets"]

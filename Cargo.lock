@@ -34,6 +34,7 @@ dependencies = [
  "byteorder",
  "chrono",
  "clap",
+ "cpp_core",
  "fixed",
  "lazy_static",
  "mopa",
